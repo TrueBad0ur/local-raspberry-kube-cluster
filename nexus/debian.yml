@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: debian
+spec:
+  containers:
+  - name: debian
+    image: debian:bookworm
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 999999999; done;" ]
