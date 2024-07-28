@@ -2,14 +2,14 @@
 
 | Object | Amount | Image | Link |
 | ------------- | ------------- | - | - |
-| Raspberry Pi 5 8GB | 4 |
-| Rack panel ERUSCUS | 1 |
-| Gurdini USB HUB 120W | 1 | 
-| Fan 30x30 | 4 |
-| SmartBuy 128 ГБ | 4 |
-| Top NVME adapter x1001 | 4 |
-| Original metal body radiator | 4 |
-| Cables | 4 |
+| Raspberry Pi 5 8GB | 4 | ![](pics/raspberrypi5.jpg) |
+| Rack panel ERUSCUS | 1 | ![](pics/eruscus.jpg) |
+| Gurdini USB HUB 120W | 1 | ![](pics/hub.jpg) |
+| Fan 30x30 | 4 | ![](pics/fan.jpg) |
+| SmartBuy 128 ГБ | 4 | ![](pics/disk.jpg) |
+| Top NVME adapter x1001 | 4 | ![](pics/adap.jpg) |
+| Original metal body radiator | 4 | ![](pics/metal.jpg) |
+| Cables | 4 | ![](pics/cable.jpg) |
 
 # Cluster setup
 
