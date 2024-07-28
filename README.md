@@ -36,7 +36,8 @@ curl -sfL https://get.k3s.io | K3S_URL=https://myserver:6443 K3S_TOKEN=mynodetok
 ## Access
 
 If error while ```kubectl get smth```:
-(how-to)[https://devops.stackexchange.com/questions/16043/error-error-loading-config-file-etc-rancher-k3s-k3s-yaml-open-etc-rancher]
+
+[how-to](https://devops.stackexchange.com/questions/16043/error-error-loading-config-file-etc-rancher-k3s-k3s-yaml-open-etc-rancher)
 ```bash
 export KUBECONFIG=~/.kube/config
 
