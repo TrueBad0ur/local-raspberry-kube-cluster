@@ -1,7 +1,7 @@
 # Specification
 
-| Object | Amount | Image | Link |
-| ------------- | ------------- | - | - |
+| Object | Amount | Image |
+| ------------- | ------------- | - |
 | Raspberry Pi 5 8GB | 4 | ![](pics/raspberrypi5.jpg) |
 | Rack panel ERUSCUS | 1 | ![](pics/eruscus.jpg) |
 | Gurdini USB HUB 120W | 1 | ![](pics/hub.jpg) |
@@ -10,6 +10,7 @@
 | Top NVME adapter x1001 | 4 | ![](pics/adap.jpg) |
 | Original metal body radiator | 4 | ![](pics/metal.jpg) |
 | Cables | 4 | ![](pics/cable.jpg) |
+| Patches | 4 | ![](pics/patch.png) |
 
 # Cluster setup
 
