@@ -11,6 +11,7 @@
 | Original metal body radiator | 4 | ![](pics/metal.jpg) |
 | Cables | 4 | ![](pics/cable.jpg) |
 | Patches | 4 | ![](pics/patch.png) |
+| TP-Link Switch TL-SG108 | 1 | ![](pics/tplink.jpeg) |
 
 # Cluster setup
 
