@@ -248,7 +248,7 @@ serviceMonitor:
   ##
   enabled: false
   path: /metrics
-  #  namespace: monitoring  (defaults to use the namespace this chart is deployed to)
+  namespace: monitoring
   labels: {}
   interval: 30s
   scheme: http
