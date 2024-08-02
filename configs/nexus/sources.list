@@ -1,1 +1,1 @@
-deb http://nexus-nexus3:8081/repository/apt-packages/ bookworm main
+deb http://nexus-nexus3.nexus.svc:8081/repository/apt-packages/ bookworm main
