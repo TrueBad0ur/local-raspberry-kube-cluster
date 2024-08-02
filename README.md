@@ -9,9 +9,9 @@
 | SmartBuy 128 ГБ | 4 | ![](pics/disk.jpg) |
 | Top NVME adapter x1001 | 4 | ![](pics/adap.jpg) |
 | Original metal body radiator | 4 | ![](pics/metal.jpg) |
-| Cables 0.15 | 3 | ![](pics/cable.jpg) |
-| Cables 0.30 | 1 | ![](pics/cable.jpg) 
-| Patches | 4 | ![](pics/patch.png) |
+| Cables | 4 | ![](pics/cable.jpg) |
+| Patches 0.15 | 3 | ![](pics/patch.png) |
+| Patches 0.30 | 1 | ![](pics/patch.png) |
 | TP-Link Switch TL-SG108 | 1 | ![](pics/tplink.jpeg) |
 
 # Cluster setup
