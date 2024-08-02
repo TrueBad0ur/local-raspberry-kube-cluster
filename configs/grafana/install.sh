@@ -1,8 +1,8 @@
 helm repo add grafana https://grafana.github.io/helm-charts
-helm install -f ./grafana/values.yml grafana grafana/grafana
+helm install -f ./grafana/values.yml grafana grafana/grafana -n monitoring
 
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm install -f ./prometheus/values.yml prometheus prometheus-community/prometheus -n monitoring
 
-prometheus server url - http://prometheus-server.default.svc
+prometheus server url - http://prometheus-server.monitoring.svc
 grafana dashboard - 12132
