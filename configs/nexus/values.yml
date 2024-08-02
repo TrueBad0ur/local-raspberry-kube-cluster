@@ -1,7 +1,7 @@
 image:
-  repository: sonatype/nexus3
+  repository: truebad0ur/nexus3-arm
   # Overrides the image tag whose default is {{ .Chart.AppVersion }}
-  tag: ""
+  tag: "3.70.1-02-java11"
   pullPolicy: IfNotPresent
   pullSecrets: []
 
