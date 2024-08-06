@@ -14,6 +14,10 @@
 | Patches 0.30 | 1 | ![](pics/patch.png) |
 | TP-Link Switch TL-SG108 | 1 | ![](pics/tplink.jpeg) |
 
+# Eventual setup
+
+![](pics/eventual.jpg)
+
 # Cluster setup
 
 [how-to](https://docs.k3s.io/quick-start)
