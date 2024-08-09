@@ -1,0 +1,13 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: nginx-cert
+  namespace: cert-manager
+spec:
+  commonName: kubehomelab.space
+  secretName: nginx-cert
+  dnsNames:
+    - kubehomelab.space
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt
