@@ -369,9 +369,10 @@ server:
     annotations:
       nginx.ingress.kubernetes.io/limit-rps: "5"
       nginx.ingress.kubernetes.io/limit-rpm: "100"
-      nginx.ingress.kubernetes.io/ssl-redirect: "false"
+      nginx.ingress.kubernetes.io/ssl-redirect: "true"
       traefik.ingress.kubernetes.io/router.tls: "false"
       kubernetes.io/ingress.class: "traefik"
+      cert-manager.io/cluster-issuer: "letsencrypt"
 
     ## Prometheus server Ingress additional labels
     ##
@@ -384,7 +385,7 @@ server:
     ## Must be provided if Ingress is enabled
     ##
     hosts:
-      - prometheus.local
+      - prometheus.kubehomelab.space
     #   - domain.com/prometheus
 
     path: /
@@ -402,10 +403,10 @@ server:
     ## Prometheus server Ingress TLS configuration
     ## Secrets must be manually created in the namespace
     ##
-    tls: []
-    #   - secretName: prometheus-server-tls
-    #     hosts:
-    #       - prometheus.domain.com
+    tls:
+      - secretName: prometheus-cert
+        hosts:
+          - prometheus.kubehomelab.space
 
   ## Server Deployment Strategy type
   strategy:
