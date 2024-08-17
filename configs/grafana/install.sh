@@ -8,3 +8,4 @@ helm install -f ./prometheus/values.yml prometheus prometheus-community/promethe
 
 prometheus server url - http://prometheus-server.monitoring.svc
 grafana dashboard - 12132
+cool k8s dashboard - 15759
