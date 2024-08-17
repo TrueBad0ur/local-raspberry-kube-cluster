@@ -38,6 +38,8 @@ export KVVERSION="v0.8.2"
 alias kube-vip="docker run --network host --rm ghcr.io/kube-vip/kube-vip:$KVVERSION"
 kube-vip manifest daemonset --interface $INTERFACE --address $VIP --inCluster --taint --controlplane --services --arp --leaderElection
 
+# put generated into /var/lib/rancher/k3s/server/manifests/daemons.yml
+
 ### add first master
 curl -sfL https://get.k3s.io | K3S_TOKEN=<token> sh -s - server --cluster-init --disable servicelb --tls-san=10.10.10.10 --tls-san=SECONDARYIP
 
