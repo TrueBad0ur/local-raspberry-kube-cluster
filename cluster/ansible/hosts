@@ -1,0 +1,10 @@
+[masters]
+host1 ansible_host=10.10.10.252
+
+[workers]
+host2 ansible_host=10.10.10.250
+host3 ansible_host=10.10.10.248
+host4 ansible_host=10.10.10.247
+
+[all:vars]
+ansible_ssh_private_key_file=~/.ssh/id_rsa_private

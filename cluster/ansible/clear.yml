@@ -1,0 +1,40 @@
+---
+- hosts: masters
+  become: true
+  become_user: root
+  remote_user: user
+  gather_facts: true
+  tasks:
+    - name: Kill all
+      become: true
+      ansible.builtin.shell: k3s-killall.sh
+      ignore_errors: yes
+
+    - name: Delete k3s
+      become: true
+      ansible.builtin.shell: k3s-uninstall.sh
+      ignore_errors: yes
+
+    - name: Final greeting
+      pause:
+        seconds: 1
+        prompt: "Well done masters!"
+
+- hosts: workers
+  become: true
+  become_user: root
+  remote_user: user
+  gather_facts: true
+  tasks:
+    - name: Kill all
+      become: true
+      ansible.builtin.shell: k3s-killall.sh
+
+    - name: Delete k3s
+      become: true
+      ansible.builtin.shell: k3s-agent-uninstall.sh
+
+    - name: Final greeting
+      pause:
+        seconds: 1
+        prompt: "Well done workers!"

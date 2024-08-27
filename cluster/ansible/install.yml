@@ -1,0 +1,50 @@
+---
+- hosts: masters
+  become: true
+  become_user: root
+  remote_user: user
+  gather_facts: true
+  tasks:
+    - name: Install
+      become: true
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | sh -s - server --cluster-init --tls-san=10.10.10.10 --tls-san=46.39.255.91
+      ignore_errors: yes
+    
+    - name: Get k3s token
+      become: true
+      ansible.builtin.slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_token
+    
+    - name: Set k3s token fact
+      set_fact:
+        k3s_token: "{{ k3s_token['content'] | b64decode }}"
+    
+    - name: Make readable k3s config
+      become: true
+      ansible.builtin.shell: chmod o+r /etc/rancher/k3s/k3s.yaml
+
+    - name: Make unreadable k3s config
+      become: true
+      ansible.builtin.shell: chmod o-r /etc/rancher/k3s/k3s.yaml
+      tags:
+        - unreadable
+
+    - name: Final greeting
+      pause:
+        seconds: 1
+        prompt: "Well done masters!"
+
+- hosts: workers
+  become: true
+  become_user: root
+  remote_user: user
+  gather_facts: true
+  tasks:
+    - name: Install
+      become: true
+      ansible.builtin.shell: |
+        export K3S_TOKEN={{ hostvars[groups['masters'][0]]['k3s_token'] }}
+        export K3S_URL=https://{{ hostvars[groups['masters'][0]]['ansible_host'] }}:6443
+        curl -sfL https://get.k3s.io | sh -
+      ignore_errors: yes
