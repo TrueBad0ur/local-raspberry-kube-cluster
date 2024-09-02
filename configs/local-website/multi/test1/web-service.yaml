@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: website-depl2
+  name: test1-depl
 spec:
-  replicas: 4
+  replicas: 1
   selector:
     matchLabels:
-      app: nginx-app2
+      app: test1-app
   template:
     metadata:
       labels:
-        app: nginx-app2
+        app: test1-app
     spec:
       containers:
       - name: nginx-cont
@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: website-svc2
+  name: test1-svc
 spec:
   ports:
   - port: 80
@@ -29,4 +29,4 @@ spec:
     protocol: TCP
     name: http
   selector:
-    app: nginx-app2
+    app: test1-app
