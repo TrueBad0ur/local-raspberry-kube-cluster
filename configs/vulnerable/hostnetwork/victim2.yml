@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: victim2
+  namespace: vuln-psa-ns
+spec:
+  containers:
+  - name: victim2
+    image: ubuntu
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "apt update && DEBIAN_FRONTEND=noninteractive apt install -y curl; while true; do curl -H 'Content-Type: application/json' -d '{ \"admin\":\"admin\", \"password\":\"Sup3r_S3cr3t\" }' -X POST victim1:8080; sleep 2; done" ]
+  nodeName: worker
