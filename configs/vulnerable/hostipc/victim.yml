@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: victim
+  labels:
+    app: victim
+  namespace: vuln-psa-ns
+spec:
+  containers:
+  - name: victim1
+    image: ubuntu
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "sleep 999999" ]
+  nodeName: worker
