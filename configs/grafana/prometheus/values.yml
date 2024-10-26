@@ -367,9 +367,6 @@ server:
     ## Prometheus server Ingress annotations
     ##
     annotations:
-      nginx.ingress.kubernetes.io/limit-rps: "5"
-      nginx.ingress.kubernetes.io/limit-rpm: "100"
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
       traefik.ingress.kubernetes.io/router.tls: "false"
       kubernetes.io/ingress.class: "traefik"
       cert-manager.io/cluster-issuer: "letsencrypt"

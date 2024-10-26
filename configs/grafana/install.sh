@@ -6,6 +6,6 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 kubectl apply -f ./prometheus/certificate.yml
 helm install -f ./prometheus/values.yml prometheus prometheus-community/prometheus -n monitoring
 
-prometheus server url - http://prometheus-server.monitoring.svc
+prometheus server url - http://prometheus-server.monitoring.svc.cluster.local
 grafana dashboard - 12132
 cool k8s dashboard - 15759
