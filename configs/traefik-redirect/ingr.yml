@@ -11,10 +11,10 @@ spec:
   ingressClassName: "traefik"
   tls:
   - hosts:
-    - anime.kubehomelab.space
+    - kubehomelab.space
     secretName: anime-cert
   rules:
-  - host: anime.kubehomelab.space
+  - host: kubehomelab.space
     http:
       paths:
       - path: /
