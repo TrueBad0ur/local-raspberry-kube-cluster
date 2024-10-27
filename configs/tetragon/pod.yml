@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ubuntu
+  namespace: tetragon-test
+spec:
+  nodeName: host4
+  containers:
+  - name: ubuntu
+    image: ubuntu:latest
+    command: [ "/bin/sh", "-c" ]
+    args:
+      - apt update &&
+        apt upgrade -y &&
+        apt install -y curl;
+        while true; do
+          echo "$(curl -s ifconfig.me)"; sleep 30;
+        done;
