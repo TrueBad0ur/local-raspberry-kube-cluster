@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grafana-ingress
+  namespace: monitoring
+  #annotations:
+    #traefik.ingress.kubernetes.io/router.tls: "true"
+    #kubernetes.io/ingress.class: "traefik"
+    #cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: traefik
+  tls:
+  - hosts:
+    - grafana.kubehomelab.space
+    secretName: wildcard-cert
+  rules:
+  - host: grafana.kubehomelab.space
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 80
