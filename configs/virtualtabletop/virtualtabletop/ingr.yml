@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: virtualtabletop-ingress
+  namespace: virtualtabletop
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: "traefik"
+  tls:
+  - hosts:
+    - virtualtabletop.kubehomelab.space
+    secretName: virtualtabletop-cert
+  rules:
+  - host: virtualtabletop.kubehomelab.space
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: virtualtabletop
+            port:
+              number: 80
