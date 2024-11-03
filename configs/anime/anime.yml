@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: anime-cont
-        image: truebad0ur/anime-webpage:v2
+        image: truebad0ur/anime-webpage:v3
         ports:
         - containerPort: 80
 ---

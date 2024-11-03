@@ -3,24 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home sweet home</title>
+    <title>ASCII Art Animation</title>
     <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
+        body {
+            font-family: monospace;
+            white-space: pre;
+            background-color: #1e1e1e;
+            color: #00ff00;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
         }
-        img {
-            display: block;
-            height: 100%;
-            width: auto;
+        #ascii-art {
+            font-size: 14px;
+            line-height: 1.2;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <img src="anime-frieren.gif" alt="Anime Frieren">
+
+<div id="ascii-art">Loading...</div>
+
+<script>
+    let artIndex = Math.floor(Math.random() * 10) + 1;
+    const artContainer = document.getElementById("ascii-art");
+
+    async function loadAsciiArt(index) {
+        try {
+            const response = await fetch(`arts/${index}.txt`);
+            if (!response.ok) {
+                artIndex = 1;
+                loadAsciiArt(artIndex);
+                return;
+            }
+            const artContent = await response.text();
+            const artLines = artContent.split("\n").map(line => line.split(""));
+            const rows = artLines.length;
+            const cols = Math.max(...artLines.map(line => line.length));
+            artContainer.textContent = Array(rows).fill("").map(() => " ".repeat(cols)).join("\n");
+
+            for (let col = 0; col < cols; col++) {
+                for (let row = 0; row < rows; row++) {
+                    artLines[row][col] && (artContainer.textContent = insertChar(artContainer.textContent, row * (cols + 1) + col, artLines[row][col]));
+                }
+                await new Promise(resolve => setTimeout(resolve, 50));
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            loadAsciiArt(index + 1);
+        } catch (error) {
+            artContainer.textContent = "Error loading file.";
+            console.error("Error loading ASCII art:", error);
+        }
+    }
+
+    function insertChar(text, index, char) {
+        return text.slice(0, index) + char + text.slice(index + 1);
+    }
+
+    loadAsciiArt(artIndex);
+</script>
+
 </body>
 </html>
