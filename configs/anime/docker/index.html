@@ -3,68 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASCII Art Animation</title>
+    <title>GitHub Code Animation</title>
     <style>
         body {
             font-family: monospace;
             white-space: pre;
-            background-color: #1e1e1e;
+            background-color: #2e2e2e; /* Увеличена яркость фона */
             color: #00ff00;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
             margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-start;
+            height: 100vh;
+            overflow: hidden;
+            margin-left: 10px; /* Отступ слева */
+            position: relative; /* Для абсолютного позиционирования фона */
         }
         #ascii-art {
+            position: absolute; /* Фон должен быть на заднем плане */
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            color: rgba(255, 255, 255, 0.3); /* Светлый цвет с большей прозрачностью для фона */
+            overflow: hidden; /* Убираем полосу прокрутки */
+            font-size: 10px; /* Размер шрифта для ASCII-арта */
+            white-space: pre; /* Сохраняем пробелы */
+            pointer-events: none; /* Чтобы клики не мешали взаимодействию с другими элементами */
+        }
+        #file-url {
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #00ffff; /* Цвет для URL */
+            padding: 5px;
+            z-index: 1; /* Поверх ASCII-арта */
+        }
+        #code-display {
             font-size: 14px;
             line-height: 1.2;
-            text-align: center;
+            max-width: calc(90vw - 10px); /* Уменьшаем ширину для отступа */
+            height: calc(100vh - 30px); /* Уменьшаем высоту для отступа */
+            overflow: hidden; /* Убираем полосу прокрутки */
+            margin-top: 30px; /* Отступ сверху для кода */
+            z-index: 1; /* Поверх ASCII-арта */
         }
     </style>
 </head>
 <body>
 
-<div id="ascii-art">Loading...</div>
+<div id="ascii-art">Loading ASCII Art...</div>
+<div id="file-url">Loading file URL...</div>
+<div id="code-display">Loading code...</div>
 
 <script>
-    let artIndex = Math.floor(Math.random() * 10) + 1;
-    const artContainer = document.getElementById("ascii-art");
+    const username = "truebad0ur";
+    const codeDisplay = document.getElementById("code-display");
+    const fileUrlDisplay = document.getElementById("file-url");
+    const asciiArtDisplay = document.getElementById("ascii-art");
 
-    async function loadAsciiArt(index) {
-        try {
-            const response = await fetch(`arts/${index}.txt`);
-            if (!response.ok) {
-                artIndex = 1;
-                loadAsciiArt(artIndex);
-                return;
-            }
-            const artContent = await response.text();
-            const artLines = artContent.split("\n").map(line => line.split(""));
-            const rows = artLines.length;
-            const cols = Math.max(...artLines.map(line => line.length));
-            artContainer.textContent = Array(rows).fill("").map(() => " ".repeat(cols)).join("\n");
+    let asciiArtFiles = [];
+    let currentAsciiIndex = 0;
 
-            for (let col = 0; col < cols; col++) {
-                for (let row = 0; row < rows; row++) {
-                    artLines[row][col] && (artContainer.textContent = insertChar(artContainer.textContent, row * (cols + 1) + col, artLines[row][col]));
-                }
-                await new Promise(resolve => setTimeout(resolve, 50));
-            }
+    async function fetchRepositories() {
+        const response = await fetch(`https://api.github.com/users/${username}/repos`);
+        const repos = await response.json();
+        return repos;
+    }
 
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            loadAsciiArt(index + 1);
-        } catch (error) {
-            artContainer.textContent = "Error loading file.";
-            console.error("Error loading ASCII art:", error);
+    async function fetchRandomFileContent(repoName) {
+        const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents`);
+        const files = await response.json();
+        const codeFiles = files.filter(file => /\.(py|tf|yaml|yml|sh|rs|c|cpp|html)$/i.test(file.name));
+        if (codeFiles.length === 0) return null;
+        const randomFile = codeFiles[Math.floor(Math.random() * codeFiles.length)];
+        return { url: randomFile.download_url, content: await (await fetch(randomFile.download_url)).text() };
+    }
+
+    async function loadAsciiArtFiles() {
+        for (let i = 1; i <= 10; i++) { // Предполагаем, что файлов 1.txt до 10.txt
+            asciiArtFiles.push(`arts/${i}.txt`);
         }
     }
 
-    function insertChar(text, index, char) {
-        return text.slice(0, index) + char + text.slice(index + 1);
+    async function fetchAsciiArt() {
+        if (currentAsciiIndex >= asciiArtFiles.length) {
+            currentAsciiIndex = 0; // Сбросить индекс при достижении конца
+        }
+        const response = await fetch(asciiArtFiles[currentAsciiIndex]);
+        if (!response.ok) return ''; // Если файл не найден, вернуть пустую строку
+        const asciiArt = await response.text();
+        asciiArtDisplay.textContent = asciiArt; // Отображаем ASCII-арт
+        currentAsciiIndex++; // Увеличиваем индекс для следующего вызова
     }
 
-    loadAsciiArt(artIndex);
+    async function displayCodeWithAnimation() {
+        await loadAsciiArtFiles(); // Загрузить список файлов ASCII-арта
+        while (true) {
+            const repos = await fetchRepositories();
+            await fetchAsciiArt(); // Загружаем ASCII-арт перед отображением нового кода
+            const randomRepo = repos[Math.floor(Math.random() * repos.length)];
+            const file = await fetchRandomFileContent(randomRepo.name);
+            if (file) {
+                fileUrlDisplay.textContent = file.url;
+                codeDisplay.textContent = "";
+                for (let char of file.content) {
+                    codeDisplay.textContent += char;
+                    await new Promise(resolve => setTimeout(resolve, 20)); // Задержка 20 мс для отображения каждого символа
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Задержка 1 секунда
+                codeDisplay.scrollTop = codeDisplay.scrollHeight; // Автопрокрутка вниз
+            }
+        }
+    }
+
+    displayCodeWithAnimation();
 </script>
 
 </body>

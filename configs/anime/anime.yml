@@ -15,9 +15,10 @@ spec:
     spec:
       containers:
       - name: anime-cont
-        image: truebad0ur/anime-webpage:v3
+        image: truebad0ur/anime-webpage:v4
         ports:
         - containerPort: 80
+        imagePullPolicy: Always
 ---
 apiVersion: v1
 kind: Service
