@@ -1,0 +1,15 @@
+apiVersion: skaffold/v1
+kind: Config
+metadata:
+  name: additronk8s
+build:
+  artifacts:
+  - image: ghcr.io/paolomainardi/additronk8s-game-controller
+    context: k8s/src/game-controller
+    docker:
+      dockerfile: Dockerfile
+deploy:
+  kubectl:
+    manifests:
+    - ./k8s/manifests/namespace.yml
+    - ./k8s/manifests/*

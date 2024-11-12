@@ -1,0 +1,10 @@
+apiVersion: retro.sparkfabrik.com/v1
+kind: Game
+metadata:
+  name: tetris
+  namespace: games
+spec:
+  name: "Tetris"
+  zipUrl: "http://46.101.14.75:9999/f-tetris.zip"
+  dir: "."
+  exe: "F-TETRIS.EXE"

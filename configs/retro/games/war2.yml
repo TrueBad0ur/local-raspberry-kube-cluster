@@ -1,0 +1,10 @@
+apiVersion: retro.sparkfabrik.com/v1
+kind: Game
+metadata:
+  name: war2
+  namespace: games
+spec:
+  name: "war2"
+  zipUrl: "http://46.101.14.75:9999/war2.zip"
+  dir: "."
+  exe: "WAR2.EXE"

@@ -18,8 +18,8 @@ global:
   ##   - myRegistryKeySecretName
   ##
   imagePullSecrets: []
-  defaultStorageClass: ""
-  storageClass: ""
+  defaultStorageClass: "cluster-provisioner"
+  storageClass: "cluster-provisioner"
   ## Compatibility adaptations for Kubernetes platforms
   ##
   compatibility:
@@ -608,7 +608,7 @@ persistence:
   ## If set to "-", storageClassName: "", which disables dynamic provisioning
   ## If undefined (the default) or set to null, no storageClassName spec is set, choosing the default provisioner
   ##
-  storageClass: ""
+  storageClass: "cluster-provisioner"
   ## @param persistence.annotations Additional custom annotations for the PVC
   ##
   annotations: {}
@@ -724,7 +724,7 @@ mysql:
     ##
     persistence:
       enabled: true
-      storageClass: ""
+      storageClass: "cluster-provisioner"
       accessModes:
         - ReadWriteOnce
       size: 8Gi

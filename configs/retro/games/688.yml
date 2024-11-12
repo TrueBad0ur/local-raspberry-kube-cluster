@@ -1,0 +1,10 @@
+apiVersion: retro.sparkfabrik.com/v1
+kind: Game
+metadata:
+  name: g688
+  namespace: games
+spec:
+  name: "688"
+  zipUrl: "http://46.101.14.75:9999/688.zip"
+  dir: "."
+  exe: "688.EXE"

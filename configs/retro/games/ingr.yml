@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: retro-ingress
+  namespace: games
+  annotations:
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    kubernetes.io/ingress.class: "traefik"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+spec:
+  ingressClassName: "traefik"
+  tls:
+  - hosts:
+    - retro.kubehomelab.space
+    secretName: retro-cert
+  rules:
+  - host: retro.kubehomelab.space
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: tetris
+            port:
+              number: 8080
