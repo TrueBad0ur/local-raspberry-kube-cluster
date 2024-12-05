@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: simulation-script-deployment
+  namespace: cnpg
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: simulation-script
+  template:
+    metadata:
+      labels:
+        app: simulation-script
+    spec:
+      containers:
+      - name: simulation-script
+        image: python:3.9
+        command: ["sh", "-c", "pip install psycopg2-binary && python /scripts/simulate.py"]
+        volumeMounts:
+        - name: script-volume
+          mountPath: /scripts
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+      volumes:
+      - name: script-volume
+        configMap:
+          name: db-simulation-script
