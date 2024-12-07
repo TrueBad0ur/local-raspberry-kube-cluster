@@ -1,0 +1,32 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: pgbench
+  namespace: cnpg
+spec:
+  template:
+    metadata:
+      labels:
+        app: pgbench-app
+    spec:
+      containers:
+      - name: pgbench-app
+        image: truebad0ur/pgbench:v2
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_DB
+          value: "app"
+        - name: POSTGRES_USER
+          value: "app"
+        - name: POSTGRES_PASSWORD
+          value: "app"
+        - name: POSTGRES_URL
+          value: "pooler-example-rw"
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: ITERATIONS
+          value: "10000000"
+        - name: WORKERS
+          value: "16"
+      restartPolicy: Never
+  backoffLimit: 0
