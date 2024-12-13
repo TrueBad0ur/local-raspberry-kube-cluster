@@ -17,6 +17,7 @@ k8s-views-global.json 		15757
 k8s-views-nodes.json 		15759
 k8s-views-pods.json 		15760
 
+Dashboard with lmsensors temperatures info - 18267
 
 ----------------------------------------------
 
