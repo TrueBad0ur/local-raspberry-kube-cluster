@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: likec4-auth
+  namespace: likec4
+spec:
+  basicAuth:
+    secret: authsecret
+
+#---
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: authsecret
+#  namespace: likec4
+#type: kubernetes.io/basic-auth
+#data:
+#  username: YWRtaW4=
+#  password: YWRtaW4=

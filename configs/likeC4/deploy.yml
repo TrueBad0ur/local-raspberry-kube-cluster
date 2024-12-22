@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: likec4-app
+  namespace: likec4
+  annotations:
+    reloader.stakater.com/search: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: likec4
+  template:
+    metadata:
+      labels:
+        app: likec4
+    spec:
+      volumes:
+        - name: config-volume-root
+          configMap:
+            name: likec4-config-root
+        - name: config-volume-root-cloud
+          configMap:
+            name: likec4-config-root-cloud
+        - name: build-output
+          emptyDir: {}
+      initContainers:
+        - name: likec4-builder
+          image: node:23-alpine
+          env:
+            - name: NODE_ENV
+              value: production
+          command:
+            - sh
+            - -c
+            - |
+              npm install --global likec4
+              mkdir -p /workdir
+              cp /config/* /workdir/
+              cd /workdir
+              likec4 build -o /output
+          volumeMounts:
+            - name: config-volume-root
+              mountPath: /config
+            - name: config-volume-root-cloud
+              mountPath: /config/cloud
+            - name: build-output
+              mountPath: /output
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: build-output
+              mountPath: /usr/share/nginx/html
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: likec4
+  name: likec4-svc
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: likec4
