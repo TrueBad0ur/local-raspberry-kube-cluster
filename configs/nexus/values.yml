@@ -87,24 +87,25 @@ metrics:
 
 ingress:
   enabled: true
-  annotations: {}
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.tls: "true"
   ingressClassName: "traefik"
   hosts:
-    - nexus.local
-  tls: []
-  #   - hosts:
-  #       - nexus.local
-  #       - nexus-docker.local
-  #       - nexus-docker-hosted.local
-  #     secretName: nexus-local-tls
+    - nexus.kubehomelab.space
+  tls:
+    - hosts:
+        - nexus.kubehomelab.space
+      secretName: nexus-cert
 
 persistence:
   enabled: true
   annotations: {}
   # existingClaim: existing-pvc
   accessMode: ReadWriteOnce
-  storageClass: local-path
-  size: 20Gi
+  storageClass: longhorn-static
+  size: 30Gi
 
 extraVolumeMounts: []
 
