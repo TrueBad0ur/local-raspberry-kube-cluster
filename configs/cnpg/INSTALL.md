@@ -3,3 +3,6 @@ kubectl apply --server-side -f \
 
 
 https://github.com/prometheus-operator/kube-prometheus/issues/1392#issuecomment-1411719953
+
+Grafana dashboard: 20417
+

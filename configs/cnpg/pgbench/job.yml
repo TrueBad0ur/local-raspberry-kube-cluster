@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
       - name: pgbench-app
-        image: truebad0ur/pgbench:v2
+        image: truebad0ur/pgbench:v3
         imagePullPolicy: Always
         env:
         - name: POSTGRES_DB
@@ -25,8 +25,10 @@ spec:
         - name: POSTGRES_PORT
           value: "5432"
         - name: ITERATIONS
-          value: "10000000"
+          value: "100000"
         - name: WORKERS
           value: "16"
+        - name: OFFSET_MILLISECONDS
+          value: "100"
       restartPolicy: Never
   backoffLimit: 0

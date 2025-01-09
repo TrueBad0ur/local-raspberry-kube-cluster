@@ -169,6 +169,17 @@ func dbWorkerWithConnection(connString string, rnd *rand.Rand, tasks <-chan int,
 			dbInsert(conn, rnd)
 		}
 	}
+        offsetStr := os.Getenv("OFFSET_MILLISECONDS")
+        offsetMilliseconds := 0
+        if offsetStr != "" {
+                offsetParsed, err := strconv.Atoi(offsetStr)
+                if err != nil || offsetParsed < 0 {
+                        log.Printf("Invalid OFFSET_MILLISECONDS value (%s), defaulting to 0\n", offsetStr)
+                } else {
+                        offsetMilliseconds = offsetParsed
+                }
+        }
+        time.Sleep(time.Duration(offsetMilliseconds) * time.Millisecond)
 
 	fmt.Printf("Worker %d completed all tasks.\n", workerID)
 	done <- struct{}{}
