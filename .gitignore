@@ -1,4 +1,5 @@
 config.yaml
+local.yaml
 config-global.yaml
 certs/*
 configs/trivy/*
