@@ -25,7 +25,7 @@ spec:
         - name: POSTGRES_PORT
           value: "5432"
         - name: ITERATIONS
-          value: "100000"
+          value: "10000000"
         - name: WORKERS
           value: "16"
         - name: OFFSET_MILLISECONDS
