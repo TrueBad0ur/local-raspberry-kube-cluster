@@ -1,0 +1,1 @@
+helm install gitea gitea/gitea -n gitea --version 2.2.0 -f values.yml
