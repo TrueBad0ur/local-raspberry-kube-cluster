@@ -1,3 +1,5 @@
+sudo apt install -y open-iscsi
+
 helm repo add longhorn https://charts.longhorn.io
 helm install longhorn longhorn/longhorn --namespace longhorn-system -f values.yml
 
