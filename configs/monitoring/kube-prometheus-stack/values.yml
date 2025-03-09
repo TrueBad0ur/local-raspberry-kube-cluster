@@ -1031,14 +1031,14 @@ grafana:
     ## IngressClassName for Grafana Ingress.
     ## Should be provided if Ingress is enable.
     ##
-    ingressClassName: traefik
+    ingressClassName: nginx
 
     ## Annotations for Grafana Ingress
     ##
     annotations:
-      traefik.ingress.kubernetes.io/router.tls: "true"
-      kubernetes.io/ingress.class: "traefik"
+      kubernetes.io/ingress.class: "nginx"
       cert-manager.io/cluster-issuer: "letsencrypt"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
 
     ## Labels to be added to the Ingress
     ##
@@ -1072,7 +1072,7 @@ grafana:
   persistence:
     enabled: true
     type: sts
-    storageClassName: "longhorn-rwx"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     size: 20Gi
