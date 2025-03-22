@@ -67,6 +67,7 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.org/websocket-services: rancher
   ingressClassName: "nginx"
   # Certain ingress controllers will require the pathType or path to be set to a different value.
   pathType: ImplementationSpecific
