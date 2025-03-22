@@ -141,3 +141,33 @@ spec:
     operator: Exists
   updateStrategy: {}
 ```
+
+# Hardening nodes
+```bash
+sudo nano /etc/systemd/system/k3s.service
+ExecStart ...... --kubelet-arg=max-pods=1000
+
+sudo nano /etc/security/limits.conf
+* soft nofile 262144
+* hard nofile 262144
+root soft nofile 262144
+root hard nofile 262144
+
+ulimit -n 262144
+
+echo "fs.inotify.max_user_instances=8192" | sudo tee -a /etc/sysctl.conf
+echo "fs.inotify.max_user_watches=524288" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+echo "fs.file-max=2097152" | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+sudo nano /etc/systemd/system/k3s.service
+
+LimitNOFILE=infinity
+LimitNPROC=infinity
+
+
+sudo systemctl daemon-reload
+sudo systemctl restart k3s/k3s-agent
+```
