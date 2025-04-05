@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: irc-claim
+  namespace: irc
+spec:
+  storageClassName: longhorn
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: irc
+  name: irc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thelounge
+  template:
+    metadata:
+      labels:
+        app: thelounge
+    spec:
+      #securityContext:
+      #  runAsUser: node
+      volumes:
+        - name: irc-volume
+          persistentVolumeClaim:
+            claimName: irc-claim
+        - name: config-volume
+          configMap:
+            name: config
+        - name: user-config-volume
+          secret:
+            secretName: user-config
+      containers:
+      - name: thelounge
+        image: ghcr.io/thelounge/thelounge:latest
+        ports:
+        - containerPort: 9000
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: irc-volume
+          mountPath: /var/opt/thelounge
+        - name: config-volume
+          mountPath: /var/opt/thelounge/config.js
+          subPath: config.js
+        - name: user-config-volume
+          mountPath: /var/opt/thelounge/users/truebad0ur.json
+          subPath: truebad0ur.json
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: irc
+  name: irc
+spec:
+  ports:
+  - port: 80
+    targetPort: 9000
+    protocol: TCP
+    name: http
+  selector:
+    app: thelounge
