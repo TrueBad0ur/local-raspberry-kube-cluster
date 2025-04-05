@@ -7,7 +7,7 @@
   tasks:
     - name: Install
       become: true
-      ansible.builtin.shell: curl -sfL https://get.k3s.io | sh -s - server --cluster-init --tls-san=10.10.10.10 --tls-san=46.39.255.91
+      ansible.builtin.shell: curl -sfL https://get.k3s.io | sh -s - server --cluster-init --tls-san=10.10.10.10 --tls-san=<global-ip>
       ignore_errors: yes
     
     - name: Get k3s token
