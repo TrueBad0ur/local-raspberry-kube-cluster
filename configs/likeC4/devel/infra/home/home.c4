@@ -5,48 +5,119 @@ specification {
 }
 
 model {
-  customer = actor 'Customer' {
-    description 'Our dear customer'
+  client = actor 'Client' {
+    description 'Внешний пользователь, обращающийся к кластеру'
+    style {
+      size medium
+      textSize large
+      shape person
+    }
   }
 
-  saas = system 'Our SaaS' {
-    component ui 'Frontend' {
-      description 'Nextjs application, hosted on Vercel'
-      style {
-        icon tech:nextjs
-        shape browser
-      }
-    }
-    component backend 'Backend Services' {
-      description '
-        Implements business logic
-        and exposes as REST API
-      '
-    }
-
-    // UI requests data from the Backend
-    ui -> backend 'fetches via HTTPS'
+  github = system 'GitHub' {
+    description 'Репозиторий, откуда ArgoCD подтягивает манифесты'
+    icon https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png
   }
 
-  // Customer uses the UI
-  customer -> ui 'opens in browser'
-  customer -> saas 'enjoys our product'
+  internet_router = system 'Provider Router' {
+    description 'Роутер провайдера, соединяет домашнюю сеть с интернетом'
+    icon https://www.dlink.com/us/en/-/media/product-pages/dir/822/dir822front.png
+    style {
+      size medium
+      color red
+    }
+  }
+
+  home_router = system 'Home Router' {
+    description 'Домашний маршрутизатор, раздаёт интернет Raspberry Pi устройствам'
+    icon https://cdn.mikrotik.com/web-assets/rb_images/1468_hi_res.png
+    style {
+      size medium
+      color green
+    }
+  }
+
+  switch = system 'Switch' {
+    description 'Коммутатор, соединяющий все Raspberry Pi'
+    icon https://www.fs.com/images/product/202011/20-port-poe-switch-1000m-32183-a.jpg
+  }
+
+  cluster = system 'Kubernetes Cluster' {
+    description 'Кластер на Raspberry Pi, в котором развёрнуты все сервисы'
+
+    component node1 'Raspberry Pi Node 1' {
+      icon https://upload.wikimedia.org/wikipedia/commons/3/3f/Raspberry_Pi_logo.svg
+    }
+    component node2 'Raspberry Pi Node 2' {
+      icon https://upload.wikimedia.org/wikipedia/commons/3/3f/Raspberry_Pi_logo.svg
+    }
+    component node3 'Raspberry Pi Node 3' {
+      icon https://upload.wikimedia.org/wikipedia/commons/3/3f/Raspberry_Pi_logo.svg
+    }
+    component node4 'Raspberry Pi Node 4' {
+      icon https://upload.wikimedia.org/wikipedia/commons/3/3f/Raspberry_Pi_logo.svg
+    }
+
+    component ingress 'NGINX Ingress Controller' {
+      icon https://upload.wikimedia.org/wikipedia/commons/c/c5/Nginx_logo.svg
+    }
+
+    component argocd 'ArgoCD' {
+      icon https://argo-cd.readthedocs.io/en/stable/assets/logo.png
+    }
+
+    component rancher 'Rancher' {
+      icon https://rancher.com/assets/img/brand-guidelines/assets/logos/png/color/rancher-logo-stacked-color.png
+    }
+
+    component keycloak 'Keycloak' {
+      icon https://www.keycloak.org/resources/images/keycloak_logo_480x108.png
+    }
+
+    component kyverno 'Kyverno' {
+      icon https://kyverno.io/img/logos/kyverno-horizontal-color.svg
+    }
+
+    component prometheus 'Prometheus' {
+      icon https://upload.wikimedia.org/wikipedia/commons/3/3b/Prometheus_software_logo.svg
+    }
+
+    component grafana 'Grafana' {
+      icon https://upload.wikimedia.org/wikipedia/commons/3/3b/Grafana_icon.svg
+    }
+  }
+
+  // Взаимосвязи
+  client -> internet_router 'Запросы из интернета'
+  internet_router -> home_router
+  home_router -> switch
+  switch -> node1
+  switch -> node2
+  switch -> node3
+  switch -> node4
+
+  client -> ingress 'Через Ingress'
+  ingress -> argocd
+  ingress -> rancher
+  ingress -> keycloak
+  ingress -> prometheus
+  ingress -> grafana
+
+  grafana -> prometheus
+  grafana -> kyverno
+
+  rancher -> keycloak
+  rancher -> actor 'user1'
+  rancher -> actor 'user2'
+  rancher -> actor 'userN'
+
+  argocd -> github
 }
 
 views {
-
   view index {
-    title 'Landscape view'
-
+    title 'Полная схема Raspberry Pi кластера'
     include *
+    autoLayout top-down
   }
-
-  view of saas {
-    include *
-
-    style customer {
-      color muted
-    }
-  }
-
 }

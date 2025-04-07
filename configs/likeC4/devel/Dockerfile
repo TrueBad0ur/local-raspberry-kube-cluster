@@ -2,7 +2,7 @@ FROM node:23-alpine AS build
 WORKDIR /app
 
 RUN npm install --global likec4
-COPY src .
+COPY infra/home .
 RUN likec4 build
 
 FROM nginx:alpine
