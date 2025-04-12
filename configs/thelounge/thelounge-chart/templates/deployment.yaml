@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: irc
+  namespace: {{ .Values.namespaceOverride }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: thelounge
+  template:
+    metadata:
+      labels:
+        app: thelounge
+    spec:
+      volumes:
+        - name: irc-volume
+          persistentVolumeClaim:
+            claimName: irc-claim
+        - name: config-volume
+          configMap:
+            name: config
+        - name: user-config-volume
+          secret:
+            secretName: {{ .Values.secret.existingSecret }}
+      containers:
+        - name: thelounge
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: irc-volume
+              mountPath: /var/opt/thelounge
+            - name: config-volume
+              mountPath: /var/opt/thelounge/config.js
+              subPath: config.js
+            - name: user-config-volume
+              mountPath: /var/opt/thelounge/users/truebad0ur.json
+              subPath: truebad0ur.json

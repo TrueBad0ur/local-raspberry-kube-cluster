@@ -1,0 +1,45 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/thelounge/thelounge
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 9000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt"
+    #nginx.org/websocket-services: irc
+  hosts:
+    - host: irc.kubehomelab.space
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: irc-cert
+      hosts:
+        - irc.kubehomelab.space
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  existingClaim: ""
+
+config:
+  create: true
+
+secret:
+  existingSecret: user-config
+
+namespaceOverride: irc
+
