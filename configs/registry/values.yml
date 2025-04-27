@@ -1,0 +1,114 @@
+global:
+  imagePullPolicy: IfNotPresent
+  imagePullSecrets: []
+  name: null
+registry:
+  additionalSpec: {}
+  affinity: {}
+  annotations: {}
+  auth:
+    basic:
+      enabled: false
+      htpasswdPath: /etc/docker/registry/auth/htpasswd
+      realm: Docker registry
+      secretName: basic-auth
+  dataVolume:
+    persistentVolumeClaim:
+      claimName: registry-pvc
+  enabled: true
+  extraEnv: []
+  image: registry:2.8.2
+  imagePullPolicy: '-'
+  imagePullSecrets: '-'
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/auth-secret: basic-auth
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+    enabled: true
+    host: registry.kubehomelab.space
+    ingressClassName: nginx
+    path: /v2/
+    pathType: Prefix
+    tls:
+    - hosts:
+      - registry.kubehomelab.space
+      secretName: registry-kubehomelab-tls
+  nodeSelector: {}
+  resources: {}
+  service:
+    additionalSpec: {}
+    annotations: {}
+    nodePort: null
+    port: 5000
+    targetPort: 5000
+    type: ClusterIP
+  tolerations: []
+ui:
+  additionalSpec: {}
+  affinity: {}
+  annotations: {}
+  catalogDefaultExpanded: false
+  catalogElementsLimit: 1000
+  catalogMaxBranches: 1
+  catalogMinBranches: 1
+  defaultTheme: auto
+  deleteImages: false
+  dockerRegistryUrl: http://my-docker-registry-ui-docker-registry-ui-registry-server:5000
+  historyCustomLabels: []
+  image: joxit/docker-registry-ui:2.5.2
+  imagePullPolicy: '-'
+  imagePullSecrets: '-'
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/auth-secret: basic-auth
+      nginx.ingress.kubernetes.io/auth-type: basic
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    enabled: true
+    host: registry-ui.kubehomelab.space
+    ingressClassName: nginx
+    path: /
+    pathType: Prefix
+    tls:
+    - hosts:
+      - registry-ui.kubehomelab.space
+      secretName: registry-ui-kubehomelab-tls
+  nginxProxyHeaders: []
+  nginxProxyPassHeaders: []
+  nodeSelector: {}
+  proxy: true
+  pullUrl: null
+  registrySecured: false
+  replicas: 1
+  resources: {}
+  runAsRoot: true
+  service:
+    additionalSpec: {}
+    annotations: {}
+    nodePort: null
+    port: 80
+    targetPort: 80
+    type: ClusterIP
+  showCatalogNbTags: false
+  showContentDigest: false
+  singleRegistry: true
+  taglistOrder: alpha-asc;num-desc
+  taglistPageSize: 100
+  theme:
+    accentText: ""
+    background: ""
+    footerBackground: ""
+    footerNeutralText: ""
+    footerText: ""
+    headerBackground: ""
+    headerText: ""
+    hoverBackground: ""
+    neutralText: ""
+    primaryText: ""
+  title: Docker registry UI
+  tolerations: []
+  useControlCacheHeader: false
