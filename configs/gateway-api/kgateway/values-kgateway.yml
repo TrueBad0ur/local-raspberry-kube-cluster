@@ -1,0 +1,34 @@
+affinity: {}
+controller:
+  extraEnv: {}
+  image:
+    pullPolicy: ""
+    registry: ""
+    repository: kgateway
+    tag: ""
+  logLevel: info
+  replicaCount: 1
+  service:
+    ports:
+      grpc: 9977
+    type: ClusterIP
+fullnameOverride: ""
+image:
+  pullPolicy: IfNotPresent
+  registry: truebad0ur
+  tag: v2.0.4
+imagePullSecrets: []
+inferenceExtension:
+  autoProvision: false
+  enabled: false
+nameOverride: ""
+nodeSelector: {}
+podAnnotations: {}
+podSecurityContext: {}
+resources: {}
+securityContext: {}
+serviceAccount:
+  annotations: {}
+  create: true
+  name: ""
+tolerations: []
