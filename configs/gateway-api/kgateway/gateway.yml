@@ -1,0 +1,26 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: https
+  namespace: kgateway-system
+spec:
+  gatewayClassName: kgateway
+  listeners:
+  - protocol: HTTP
+    port: 80
+    name: http
+    hostname: cafe.kubehomelab.space
+    allowedRoutes:
+      namespaces:
+        from: All
+  - protocol: HTTPS
+    port: 443
+    name: https
+    hostname: cafe.kubehomelab.space
+    tls:
+      mode: Terminate
+      certificateRefs:
+        - name: https
+    allowedRoutes:
+      namespaces:
+        from: All
