@@ -1,6 +1,9 @@
-sudo apt install -y open-iscsi
+for ip in $(kubectl get nodes -o jsonpath='{.items[*].status.addresses[?(@.type=="InternalIP")].address}'); do
+  ssh user@$ip "sudo apt install -y open-iscsi nfs-common"
+done
 
 helm repo add longhorn https://charts.longhorn.io
-helm install longhorn longhorn/longhorn --namespace longhorn-system -f values.yml
+helm repo update
+helm upgrade -i --create-namespace --namespace longhorn-system --version 1.12.1 longhorn longhorn/longhorn -f values.yml
 
-mb you should patch and enable allowVolumeExpansion
+kubectl apply -f storageclass-rwx.yml
