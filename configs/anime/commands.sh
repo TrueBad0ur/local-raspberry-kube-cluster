@@ -1,1 +1,1 @@
-k create secret tls wildcard-cert  --cert=../../certs/root-fullchain.pem --key=../../certs/root-privkey.pem --namespace=anime
+helm upgrade -i --create-namespace --namespace anime anime ./website-chart

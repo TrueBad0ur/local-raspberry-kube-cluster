@@ -15,8 +15,8 @@ controller:
 fullnameOverride: ""
 image:
   pullPolicy: IfNotPresent
-  registry: truebad0ur
-  tag: v2.0.4
+  registry: ghcr.io/kgateway-dev
+  tag: v2.4.2
 imagePullSecrets: []
 inferenceExtension:
   autoProvision: false
