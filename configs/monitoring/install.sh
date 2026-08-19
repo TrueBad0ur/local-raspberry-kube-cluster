@@ -1,24 +1,8 @@
-helm repo add grafana https://grafana.github.io/helm-charts
-kubectl apply -f ./grafana/certificate.yml
-helm install -f ./grafana/values.yml grafana grafana/grafana -n monitoring
-
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-kubectl apply -f ./prometheus/certificate.yml
-helm install -f ./prometheus/values.yml prometheus prometheus-community/prometheus -n monitoring
+helm repo update
 
-prometheus server url - http://prometheus-server.monitoring.svc.cluster.local
-grafana dashboard - 12132
-cool k8s dashboard - 15759
+helm upgrade -i --create-namespace --namespace monitoring --version 88.5.0 monitoring prometheus-community/kube-prometheus-stack -f kube-prometheus-stack/values.yml
 
-cool k8s dashboards:
-k8s-system-api-server.json 	15761
-k8s-system-coredns.json 	15762
-k8s-views-global.json 		15757
-k8s-views-nodes.json 		15759
-k8s-views-pods.json 		15760
+kubectl apply -f kube-prometheus-stack/grafana-httproute.yml
 
-Dashboard with lmsensors temperatures info - 18267
-
-----------------------------------------------
-
-helm install -n monitoring my-kube-prometheus-stack prometheus-community/kube-prometheus-stack -f values.yml
+# grafana admin login: admin / prom-operator (see grafana.adminPassword in values.yml)
