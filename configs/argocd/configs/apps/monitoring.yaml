@@ -22,7 +22,12 @@ spec:
       targetRevision: main
       path: configs/monitoring/kube-prometheus-stack
       directory:
-        include: "grafana-httproute.yml,cluster-dashboard-configmap.yml"
+        include: "grafana-httproute.yml"
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/monitoring/kube-prometheus-stack
+      directory:
+        include: "cluster-dashboard-configmap.yml"
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
