@@ -7,7 +7,9 @@ metadata:
     link.argocd.argoproj.io/external-link: https://grafana.kube.truebad0ur.space
 spec:
   parentRefs:
-    - name: http
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: http
       namespace: kgateway-system
   hostnames:
     - "grafana.kube.truebad0ur.space"
@@ -17,5 +19,8 @@ spec:
             type: PathPrefix
             value: /
       backendRefs:
-        - name: monitoring-grafana
+        - group: ""
+          kind: Service
+          name: monitoring-grafana
           port: 80
+          weight: 1
