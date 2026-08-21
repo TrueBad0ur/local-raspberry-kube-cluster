@@ -1,8 +1,11 @@
-# Talk to the Kubernetes API directly to patch Application resources instead of going
-# through the Argo CD gRPC/REST API — avoids having to mint a dedicated Argo CD account/token.
-extraArgs:
-  - --applications-api
-  - kubernetes
+# Talks to the Kubernetes API directly to patch Application resources instead of going
+# through the Argo CD gRPC/REST API (avoids minting a dedicated Argo CD account/token) —
+# this is the default `--applications-api kubernetes` behavior, no override needed.
+#
+# NOTE: pinned to the last "classic" annotation-driven release line (chart 0.14.x / app
+# v0.17.0). Chart >=1.0.0 rewrote the tool around a new `ImageUpdater` CRD and dropped the
+# Application-annotation mechanism (and the --applications-api flag) entirely — incompatible
+# with the argocd-image-updater.argoproj.io/* annotations used on our Applications.
 
 config:
   # docker.io is a public/anonymous-friendly registry by default, no registries.conf needed
