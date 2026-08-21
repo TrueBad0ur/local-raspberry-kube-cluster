@@ -37,3 +37,8 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # kgateway's CRDs (GatewayParameters etc.) are large enough to hit the same
+      # "metadata.annotations: Too long" apply failure as kube-prometheus-stack's CRDs —
+      # see configs/argocd/configs/apps/monitoring.yaml for the full explanation.
+      - ServerSideApply=true
+      - Replace=true
