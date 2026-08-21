@@ -1,0 +1,38 @@
+# Self-managed: Argo CD manages its own installation. Standard pattern, but if you ever
+# want to break the loop, just `argocd app delete argocd --cascade=false`.
+#
+# Prerequisite (one-time, not managed here, secret kept out of git):
+#   kubectl create secret generic argocd-oidc-secret -n argo-cd \
+#     --from-literal=oidc.keycloak.clientSecret="<argocd client secret from Keycloak>"
+#   kubectl label secret argocd-oidc-secret -n argo-cd app.kubernetes.io/part-of=argocd
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argo-cd
+spec:
+  project: default
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 10.4.0
+      helm:
+        valueFiles:
+          - $values/configs/argocd/values.yml
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/argocd
+      directory:
+        include: "argocd-httproute.yml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-cd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

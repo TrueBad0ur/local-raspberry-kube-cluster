@@ -1,0 +1,37 @@
+# ⚠ Chart default admin/admin credentials are NOT overridden here (chart has no
+# existingSecret option to source them from a Secret). Log in once after first sync and
+# change the password immediately.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kubevalet
+  namespace: argo-cd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/TrueBad0ur/kubevalet.git
+    targetRevision: main
+    path: charts/kubevalet
+    helm:
+      values: |
+        ingress:
+          enabled: false
+        httpRoute:
+          enabled: true
+          hostname: "kubevalet.kube.truebad0ur.space"
+          parentRefs:
+            name: http
+            namespace: kgateway-system
+        postgres:
+          persistence:
+            enabled: true
+            storageClassName: longhorn
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kubevalet
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

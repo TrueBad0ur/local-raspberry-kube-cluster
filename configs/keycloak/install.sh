@@ -1,8 +1,15 @@
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install keycloak -n keycloak bitnami/keycloak --version 24.4.13 -f values.yml
+helm repo add codecentric https://codecentric.github.io/helm-charts
+helm repo update
 
-intergrate with rancher:
+kubectl create namespace keycloak --dry-run=client -o yaml | kubectl apply -f -
 
-https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/authentication-permissions-and-global-configuration/authentication-config/configure-keycloak-oidc
+# admin bootstrap creds, generated once, kept out of git:
+kubectl create secret generic keycloak-admin-credentials -n keycloak \
+  --from-literal=KC_BOOTSTRAP_ADMIN_USERNAME=admin \
+  --from-literal=KC_BOOTSTRAP_ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -d '=+/' | cut -c1-20)" \
+  --dry-run=client -o yaml | kubectl apply -f -
 
-https://github.com/dsohk/rancher-keycloak-efk-integration-workshop/blob/main/docs/Exercise-1-Accessing-Rancher-and-Keycloak.md
+helm upgrade -i --namespace keycloak --version 7.2.3 keycloak codecentric/keycloakx -f values.yml
+
+# these creds only work on first boot (fresh/empty DB) - once the master realm exists,
+# Keycloak ignores them; reset the "data" PVC to re-bootstrap.

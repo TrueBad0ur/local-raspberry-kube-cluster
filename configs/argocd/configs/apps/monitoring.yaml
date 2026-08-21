@@ -1,0 +1,34 @@
+# Prerequisite (one-time, not managed here, secret kept out of git):
+#   kubectl create secret generic grafana-oidc-secret -n monitoring \
+#     --from-literal=GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET="<grafana client secret from Keycloak>"
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring
+  namespace: argo-cd
+spec:
+  project: default
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 88.5.0
+      helm:
+        valueFiles:
+          - $values/configs/monitoring/kube-prometheus-stack/values.yml
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/monitoring/kube-prometheus-stack
+      directory:
+        include: "grafana-httproute.yml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

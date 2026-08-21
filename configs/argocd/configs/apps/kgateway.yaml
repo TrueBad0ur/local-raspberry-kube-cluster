@@ -1,0 +1,39 @@
+# Prerequisite (one-time, not managed here): Gateway API CRDs.
+#   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.1/standard-install.yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kgateway
+  namespace: argo-cd
+spec:
+  project: default
+  sources:
+    - repoURL: cr.kgateway.dev/kgateway-dev/charts
+      chart: kgateway-crds
+      targetRevision: v2.4.2
+      helm:
+        releaseName: kgateway-crds
+    - repoURL: cr.kgateway.dev/kgateway-dev/charts
+      chart: kgateway
+      targetRevision: v2.4.2
+      helm:
+        releaseName: kgateway
+        valueFiles:
+          - $values/configs/gateway-api/kgateway/values-kgateway.yml
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/gateway-api/kgateway
+      directory:
+        include: "gateway.yml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kgateway-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

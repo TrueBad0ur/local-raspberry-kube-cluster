@@ -1,0 +1,22 @@
+# App-of-apps: points Argo CD at this same repo's configs/argocd/configs/apps directory.
+# Drop a new Application manifest in apps/ and Argo CD picks it up automatically.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root-apps
+  namespace: argo-cd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+    targetRevision: main
+    path: configs/argocd/configs/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-cd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

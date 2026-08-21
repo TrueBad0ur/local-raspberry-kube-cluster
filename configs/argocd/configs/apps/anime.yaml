@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: anime
+  namespace: argo-cd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+    targetRevision: main
+    path: configs/anime/website-chart
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: anime
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

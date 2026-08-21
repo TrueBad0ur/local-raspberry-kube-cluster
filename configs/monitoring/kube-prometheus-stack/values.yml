@@ -1032,6 +1032,20 @@ grafana:
     server:
       domain: grafana.kube.truebad0ur.space
       root_url: "https://grafana.kube.truebad0ur.space/"
+    auth.generic_oauth:
+      enabled: true
+      name: Keycloak
+      client_id: grafana
+      client_secret: "$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}"
+      scopes: "openid profile email"
+      auth_url: "https://keycloak.kube.truebad0ur.space/realms/homelab/protocol/openid-connect/auth"
+      token_url: "https://keycloak.kube.truebad0ur.space/realms/homelab/protocol/openid-connect/token"
+      api_url: "https://keycloak.kube.truebad0ur.space/realms/homelab/protocol/openid-connect/userinfo"
+      role_attribute_path: "contains(realm_access.roles[*], 'admin') && 'Admin' || 'Viewer'"
+      allow_sign_up: true
+
+  # client_secret above is read from this Secret's env var (kept out of git); see monitoring/install.sh.
+  envFromSecret: grafana-oidc-secret
 
   # # To make Grafana persistent (Using Statefulset)
   # #
