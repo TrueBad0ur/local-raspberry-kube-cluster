@@ -33,7 +33,10 @@ spec:
     syncOptions:
       - CreateNamespace=true
       # kube-prometheus-stack's CRDs (Prometheus, Alertmanager, etc.) are large enough that
-      # client-side apply's kubectl.kubernetes.io/last-applied-configuration annotation
-      # exceeds the 256KiB annotation limit, causing intermittent sync failures ("metadata.annotations:
-      # Too long"). Server-side apply avoids that annotation entirely.
+      # applying them via a patch (client- or server-side) tries to write/merge against the
+      # full existing object and exceeds the 256KiB annotation limit ("metadata.annotations:
+      # Too long"). ServerSideApply alone didn't avoid this - Replace does a full PUT instead
+      # of a patch, which sidesteps the annotation-size check entirely. This is the combo
+      # Argo CD's own docs recommend for oversized CRDs.
       - ServerSideApply=true
+      - Replace=true
