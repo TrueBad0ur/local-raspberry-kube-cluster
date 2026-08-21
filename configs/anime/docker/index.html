@@ -67,19 +67,31 @@
     let asciiArtFiles = [];
     let currentAsciiIndex = 0;
 
+    let cachedRepos = null;
+    let reposFetchedAt = 0;
+    const REPOS_CACHE_MS = 10 * 60 * 1000; // avoid re-hitting the unauthenticated GitHub API (60 req/hour) every loop
+
     async function fetchRepositories() {
+        const now = Date.now();
+        if (cachedRepos && now - reposFetchedAt < REPOS_CACHE_MS) return cachedRepos;
         const response = await fetch(`https://api.github.com/users/${username}/repos`);
-        const repos = await response.json();
-        return repos;
+        if (!response.ok) throw new Error(`GitHub API error ${response.status}`);
+        cachedRepos = await response.json();
+        reposFetchedAt = now;
+        return cachedRepos;
     }
 
     async function fetchRandomFileContent(repoName) {
         const response = await fetch(`https://api.github.com/repos/${username}/${repoName}/contents`);
+        if (!response.ok) throw new Error(`GitHub API error ${response.status}`);
         const files = await response.json();
+        if (!Array.isArray(files)) return null;
         const codeFiles = files.filter(file => /\.(py|tf|yaml|yml|sh|rs|c|cpp|html)$/i.test(file.name));
         if (codeFiles.length === 0) return null;
         const randomFile = codeFiles[Math.floor(Math.random() * codeFiles.length)];
-        return { url: randomFile.download_url, content: await (await fetch(randomFile.download_url)).text() };
+        const contentResponse = await fetch(randomFile.download_url);
+        if (!contentResponse.ok) throw new Error(`GitHub raw fetch error ${contentResponse.status}`);
+        return { url: randomFile.download_url, content: await contentResponse.text() };
     }
 
     async function loadAsciiArtFiles() {
@@ -99,22 +111,37 @@
         currentAsciiIndex++; // Увеличиваем индекс для следующего вызова
     }
 
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function typeContent(text) {
+        codeDisplay.textContent = "";
+        for (const char of text) {
+            codeDisplay.textContent += char;
+            await sleep(20);
+        }
+    }
+
     async function displayCodeWithAnimation() {
         await loadAsciiArtFiles(); // Загрузить список файлов ASCII-арта
         while (true) {
-            const repos = await fetchRepositories();
-            await fetchAsciiArt(); // Загружаем ASCII-арт перед отображением нового кода
-            const randomRepo = repos[Math.floor(Math.random() * repos.length)];
-            const file = await fetchRandomFileContent(randomRepo.name);
-            if (file) {
-                fileUrlDisplay.textContent = file.url;
-                codeDisplay.textContent = "";
-                for (let char of file.content) {
-                    codeDisplay.textContent += char;
-                    await new Promise(resolve => setTimeout(resolve, 20)); // Задержка 20 мс для отображения каждого символа
+            try {
+                const repos = await fetchRepositories();
+                await fetchAsciiArt(); // Загружаем ASCII-арт перед отображением нового кода
+                const randomRepo = repos[Math.floor(Math.random() * repos.length)];
+                const file = await fetchRandomFileContent(randomRepo.name);
+                if (file) {
+                    fileUrlDisplay.textContent = file.url;
+                    await typeContent(file.content);
+                    codeDisplay.scrollTop = codeDisplay.scrollHeight; // Автопрокрутка вниз
+                    await sleep(1000);
+                } else {
+                    await sleep(500); // repo had no matching files — don't spin on the API
                 }
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Задержка 1 секунда
-                codeDisplay.scrollTop = codeDisplay.scrollHeight; // Автопрокрутка вниз
+            } catch (err) {
+                console.error(err);
+                await sleep(5000); // back off on API errors (e.g. rate limiting)
             }
         }
     }

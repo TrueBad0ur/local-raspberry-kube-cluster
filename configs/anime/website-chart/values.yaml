@@ -3,7 +3,7 @@ replicaCount: 3
 image:
   repository: truebad0ur/anime-webpage
   pullPolicy: Always
-  tag: "v5"
+  tag: "v6"
 
 imagePullSecrets: []
 nameOverride: ""
