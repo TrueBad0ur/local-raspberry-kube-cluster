@@ -5,6 +5,16 @@ metadata:
   namespace: argo-cd
 spec:
   project: default
+  # The bgppeers CRD's conversion webhook caBundle is generated and patched in at runtime by
+  # metallb's own controller (self-signed webhook cert), not something the chart's static
+  # manifest can know — Argo CD resetting it to the chart's placeholder on every sync, only
+  # for the controller to patch it right back, caused a perpetual OutOfSync/Synced flap.
+  ignoreDifferences:
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+      name: bgppeers.metallb.io
+      jsonPointers:
+        - /spec/conversion
   sources:
     - repoURL: https://metallb.github.io/metallb
       chart: metallb
