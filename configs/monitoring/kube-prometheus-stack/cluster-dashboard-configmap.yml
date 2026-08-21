@@ -1,0 +1,217 @@
+# Auto-discovered by Grafana's dashboard sidecar (grafana.sidecar.dashboards, label
+# grafana_dashboard=1, searchNamespace ALL - see monitoring values.yml).
+#
+# One row per node (repeated via the $node template variable, default "All") instead of a
+# single-node dropdown - all machines' CPU/mem/disk/network on one page. Undervoltage and
+# temperature come from node-exporter's hwmon collector (enabled by default), which already
+# exposes the Pi's raspberrypi_hwmon sensor - no extra exporter needed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-cluster-nodes
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  cluster-nodes.json: |
+    {
+      "title": "Cluster Nodes",
+      "uid": "cluster-nodes-overview",
+      "timezone": "utc+3",
+      "schemaVersion": 39,
+      "editable": true,
+      "refresh": "30s",
+      "time": { "from": "now-6h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "node",
+            "type": "query",
+            "datasource": { "type": "prometheus", "uid": "prometheus" },
+            "query": { "query": "label_values(node_uname_info, nodename)", "refId": "node" },
+            "refresh": 2,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "row",
+          "title": "Undervoltage alert (all nodes)",
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "panels": []
+        },
+        {
+          "type": "stat",
+          "title": "Undervoltage now",
+          "id": 1,
+          "gridPos": { "h": 4, "w": 24, "x": 0, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "targets": [
+            {
+              "expr": "node_hwmon_in_lcrit_alarm_volts * on(instance) group_left(nodename) node_uname_info",
+              "legendFormat": "{{nodename}}",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {
+            "defaults": {
+              "mappings": [
+                { "type": "value", "options": { "0": { "text": "OK", "color": "green" } } },
+                { "type": "value", "options": { "1": { "text": "UNDERVOLTAGE", "color": "red" } } }
+              ],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  { "color": "green", "value": null },
+                  { "color": "red", "value": 1 }
+                ]
+              }
+            }
+          },
+          "options": {
+            "reduceOptions": { "calcs": ["lastNotNull"] },
+            "orientation": "horizontal",
+            "textMode": "value_and_name",
+            "colorMode": "background"
+          }
+        },
+        {
+          "type": "row",
+          "title": "Node: $node",
+          "repeat": "node",
+          "repeatDirection": "v",
+          "collapsed": true,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+          "panels": [
+            {
+              "type": "timeseries",
+              "title": "CPU usage %",
+              "id": 100,
+              "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } },
+              "targets": [
+                {
+                  "expr": "100 - (avg by (nodename) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]) * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"}) * 100)",
+                  "legendFormat": "{{nodename}}",
+                  "refId": "A"
+                }
+              ]
+            },
+            {
+              "type": "timeseries",
+              "title": "Memory usage %",
+              "id": 101,
+              "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } },
+              "targets": [
+                {
+                  "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"}",
+                  "legendFormat": "{{nodename}}",
+                  "refId": "A"
+                }
+              ]
+            },
+            {
+              "type": "timeseries",
+              "title": "Disk usage % (/)",
+              "id": 102,
+              "gridPos": { "h": 8, "w": 4, "x": 12, "y": 0 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } },
+              "targets": [
+                {
+                  "expr": "(1 - (node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"\"} / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"\"})) * 100 * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"}",
+                  "legendFormat": "{{nodename}}",
+                  "refId": "A"
+                }
+              ]
+            },
+            {
+              "type": "timeseries",
+              "title": "Network I/O",
+              "id": 103,
+              "gridPos": { "h": 8, "w": 4, "x": 16, "y": 0 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "fieldConfig": { "defaults": { "unit": "Bps" } },
+              "targets": [
+                {
+                  "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|cali.*|cilium.*\"}[5m]) * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"}",
+                  "legendFormat": "{{nodename}} rx",
+                  "refId": "A"
+                },
+                {
+                  "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|cali.*|cilium.*\"}[5m]) * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"}",
+                  "legendFormat": "{{nodename}} tx",
+                  "refId": "B"
+                }
+              ]
+            },
+            {
+              "type": "stat",
+              "title": "Undervoltage",
+              "id": 104,
+              "gridPos": { "h": 8, "w": 2, "x": 20, "y": 0 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [
+                {
+                  "expr": "node_hwmon_in_lcrit_alarm_volts * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"}",
+                  "legendFormat": "{{nodename}}",
+                  "refId": "A"
+                }
+              ],
+              "fieldConfig": {
+                "defaults": {
+                  "mappings": [
+                    { "type": "value", "options": { "0": { "text": "OK", "color": "green" } } },
+                    { "type": "value", "options": { "1": { "text": "LOW", "color": "red" } } }
+                  ],
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "green", "value": null },
+                      { "color": "red", "value": 1 }
+                    ]
+                  }
+                }
+              },
+              "options": { "colorMode": "background", "textMode": "value" }
+            },
+            {
+              "type": "stat",
+              "title": "Temp °C",
+              "id": 105,
+              "gridPos": { "h": 8, "w": 2, "x": 22, "y": 0 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [
+                {
+                  "expr": "max by (nodename) (node_hwmon_temp_celsius * on(instance) group_left(nodename) node_uname_info{nodename=~\"$node\"})",
+                  "legendFormat": "{{nodename}}",
+                  "refId": "A"
+                }
+              ],
+              "fieldConfig": {
+                "defaults": {
+                  "unit": "celsius",
+                  "thresholds": {
+                    "mode": "absolute",
+                    "steps": [
+                      { "color": "green", "value": null },
+                      { "color": "orange", "value": 70 },
+                      { "color": "red", "value": 80 }
+                    ]
+                  }
+                }
+              },
+              "options": { "colorMode": "background", "textMode": "value" }
+            }
+          ]
+        }
+      ]
+    }
