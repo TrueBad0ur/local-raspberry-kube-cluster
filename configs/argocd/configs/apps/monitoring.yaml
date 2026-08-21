@@ -32,3 +32,8 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      # kube-prometheus-stack's CRDs (Prometheus, Alertmanager, etc.) are large enough that
+      # client-side apply's kubectl.kubernetes.io/last-applied-configuration annotation
+      # exceeds the 256KiB annotation limit, causing intermittent sync failures ("metadata.annotations:
+      # Too long"). Server-side apply avoids that annotation entirely.
+      - ServerSideApply=true
