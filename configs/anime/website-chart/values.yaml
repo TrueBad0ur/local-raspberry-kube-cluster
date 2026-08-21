@@ -29,6 +29,8 @@ service:
 httpRoute:
   enabled: true
   hostname: website.kube.truebad0ur.space
+  annotations:
+    link.argocd.argoproj.io/external-link: https://website.kube.truebad0ur.space
   parentRefs:
     name: http
     namespace: kgateway-system

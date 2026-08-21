@@ -1,0 +1,30 @@
+# Watches images referenced by Argo CD Applications (via annotations on those Applications,
+# see kubevalet.yaml) and patches the Application's Helm parameters directly through the
+# Kubernetes API when a new image/digest appears — triggering a redeploy without needing a
+# git commit or a dedicated Argo CD account/token.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-image-updater
+  namespace: argo-cd
+spec:
+  project: default
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argocd-image-updater
+      targetRevision: 1.2.4
+      helm:
+        valueFiles:
+          - $values/configs/argocd-image-updater/values.yml
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo-cd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -5,6 +5,10 @@ metadata:
   name: {{ include "website-chart.fullname" . }}
   labels:
     {{- include "website-chart.labels" . | nindent 4 }}
+  {{- with .Values.httpRoute.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   parentRefs:
     - name: {{ .Values.httpRoute.parentRefs.name }}

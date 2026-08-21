@@ -1,11 +1,18 @@
-# ⚠ Chart default admin/admin credentials are NOT overridden here (chart has no
-# existingSecret option to source them from a Secret). Log in once after first sync and
-# change the password immediately.
+# ⚠ Chart default admin/admin login (auth.adminUsername/adminPassword) is NOT overridden here.
+# Log in once after first sync and change the password immediately.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: kubevalet
   namespace: argo-cd
+  annotations:
+    # Argo CD Image Updater: track the `latest` tag's digest on Docker Hub and patch this
+    # Application's Helm parameters (image.repository/image.tag) when it changes, redeploying
+    # kubevalet automatically without a git commit.
+    argocd-image-updater.argoproj.io/image-list: kubevalet=truebad0ur/kubevalet
+    argocd-image-updater.argoproj.io/kubevalet.update-strategy: digest
+    argocd-image-updater.argoproj.io/kubevalet.helm.image-name: image.repository
+    argocd-image-updater.argoproj.io/kubevalet.helm.image-tag: image.tag
 spec:
   project: default
   source:
@@ -14,14 +21,15 @@ spec:
     path: charts/kubevalet
     helm:
       values: |
-        # TODO: switch to a proper released tag once `make release` is cut for this feature.
         image:
-          tag: "0.3.21-gateway-api-support"
+          tag: "latest"
         ingress:
           enabled: false
         httpRoute:
           enabled: true
           hostname: "kubevalet.kube.truebad0ur.space"
+          annotations:
+            link.argocd.argoproj.io/external-link: https://kubevalet.kube.truebad0ur.space
           parentRefs:
             name: http
             namespace: kgateway-system

@@ -51,6 +51,8 @@ http:
 # Gateway API (kgateway) route instead of Ingress.
 httpRoute:
   enabled: true
+  annotations:
+    link.argocd.argoproj.io/external-link: https://keycloak.kube.truebad0ur.space
   parentRefs:
     - name: http
       namespace: kgateway-system

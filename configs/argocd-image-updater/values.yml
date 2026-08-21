@@ -1,0 +1,10 @@
+# Talk to the Kubernetes API directly to patch Application resources instead of going
+# through the Argo CD gRPC/REST API — avoids having to mint a dedicated Argo CD account/token.
+extraArgs:
+  - --applications-api
+  - kubernetes
+
+config:
+  # docker.io is a public/anonymous-friendly registry by default, no registries.conf needed
+  # for the images this cluster tracks (kubevalet on Docker Hub).
+  registries: []
