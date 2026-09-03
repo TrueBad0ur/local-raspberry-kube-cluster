@@ -1096,6 +1096,14 @@ grafana:
       # logs: Grafana's scan ran ~4s before the sidecar wrote loki-datasource.yaml), so the Loki
       # datasource was written to disk but never actually registered.
       initDatasources: true
+      # The chart doesn't switch this automatically for the init-container case: with the
+      # default WATCH it runs forever and the pod hangs in Init:1/2 forever (confirmed - had to
+      # kill a stuck pod). LIST does one sync and exits, which is exactly what an initContainer
+      # needs. Note: initDatasources:true replaces the regular runtime sidecar entirely (chart
+      # template condition is `enabled and not initDatasources` for the normal one) - so new
+      # grafana_datasource=1 ConfigMaps added later won't be picked up live, only at pod start.
+      # Acceptable here since datasources change rarely; restart the grafana pod to pick up new ones.
+      watchMethod: LIST
       defaultDatasourceEnabled: true
       isDefaultDatasource: true
 
