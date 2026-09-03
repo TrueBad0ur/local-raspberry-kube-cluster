@@ -1,0 +1,120 @@
+# Auto-discovered by Grafana's dashboard sidecar (grafana_dashboard=1 label, same mechanism as
+# configs/monitoring/kube-prometheus-stack/cluster-dashboard-configmap.yml).
+#
+# Prometheus only gives aggregate counters (see servicemonitor.yml comment - no per-event-type
+# breakdown), so the actual "which process ran / which connection was made" visibility comes
+# from Loki, fed by Promtail tailing Tracee's JSON pod logs.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-dashboard-tracee
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  tracee.json: |
+    {
+      "title": "Tracee - Runtime Security",
+      "uid": "tracee-runtime-security",
+      "timezone": "utc+3",
+      "schemaVersion": 39,
+      "editable": true,
+      "refresh": "30s",
+      "time": { "from": "now-1h", "to": "now" },
+      "panels": [
+        {
+          "type": "row",
+          "title": "Overview (Prometheus)",
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+          "panels": []
+        },
+        {
+          "type": "timeseries",
+          "title": "Event rate",
+          "id": 1,
+          "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "ops" } },
+          "targets": [
+            {
+              "expr": "sum by (pod) (rate(tracee_ebpf_events_total[5m]))",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "timeseries",
+          "title": "Filtered / lost / errors",
+          "id": 2,
+          "gridPos": { "h": 8, "w": 12, "x": 12, "y": 1 },
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "fieldConfig": { "defaults": { "unit": "ops" } },
+          "targets": [
+            {
+              "expr": "sum(rate(tracee_ebpf_events_filtered[5m]))",
+              "legendFormat": "filtered",
+              "refId": "A"
+            },
+            {
+              "expr": "sum(rate(tracee_ebpf_lostevents_total[5m]))",
+              "legendFormat": "lost",
+              "refId": "B"
+            },
+            {
+              "expr": "sum(rate(tracee_ebpf_errors_total[5m]))",
+              "legendFormat": "errors",
+              "refId": "C"
+            }
+          ]
+        },
+        {
+          "type": "row",
+          "title": "Live events (Loki)",
+          "collapsed": false,
+          "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
+          "panels": []
+        },
+        {
+          "type": "logs",
+          "title": "Process executions (sched_process_exec)",
+          "id": 3,
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 10 },
+          "datasource": { "type": "loki", "uid": "loki" },
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": true,
+            "sortOrder": "Descending"
+          },
+          "targets": [
+            {
+              "expr": "{namespace=\"tracee\"} | json | eventName=\"sched_process_exec\" | line_format \"{{.hostName}} {{.processName}} -> {{.args}}\"",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "logs",
+          "title": "Network activity (connect / icmp / http)",
+          "id": 4,
+          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
+          "datasource": { "type": "loki", "uid": "loki" },
+          "options": {
+            "showTime": true,
+            "showLabels": false,
+            "wrapLogMessage": true,
+            "prettifyLogMessage": true,
+            "sortOrder": "Descending"
+          },
+          "targets": [
+            {
+              "expr": "{namespace=\"tracee\"} | json | eventName=~\"net_tcp_connect|net_packet_icmp|net_packet_http_request|net_packet_http_response\" | line_format \"{{.hostName}} {{.processName}} {{.eventName}} -> {{.args}}\"",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }

@@ -1,0 +1,21 @@
+# Auto-discovered by Grafana's datasource sidecar (grafana.sidecar.datasources, label
+# grafana_datasource=1, searchNamespace ALL - see monitoring values.yml), same pattern as
+# the Prometheus datasource that ships with kube-prometheus-stack.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-datasource-loki
+  namespace: loki
+  labels:
+    grafana_datasource: "1"
+data:
+  loki-datasource.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki.loki.svc.cluster.local:3100
+        uid: loki
+        jsonData:
+          maxLines: 1000

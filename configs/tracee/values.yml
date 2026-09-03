@@ -96,7 +96,7 @@ config:
   log:
     level: info
   output:
-    format: table #json
+    format: json
     options:
       parseArguments: true
       stackAddresses: false

@@ -1,0 +1,56 @@
+# SingleBinary deployment mode - SimpleScalable/Distributed (the chart's default) require
+# external object storage (S3/GCS/etc); SingleBinary just needs a PVC, which is all a
+# homelab-scale log volume needs (matches this project's low-redundancy Longhorn choice
+# elsewhere - see configs/longhorn).
+deploymentMode: SingleBinary
+
+loki:
+  auth_enabled: false
+  commonConfig:
+    replication_factor: 1
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  storage:
+    type: filesystem
+  ingester:
+    chunk_encoding: snappy
+
+singleBinary:
+  replicas: 1
+  persistence:
+    enabled: true
+    storageClass: longhorn
+    size: 10Gi
+
+# SimpleScalable-mode targets - must be zeroed out explicitly, the chart won't infer this
+# from deploymentMode alone.
+write:
+  replicas: 0
+read:
+  replicas: 0
+backend:
+  replicas: 0
+
+# No object storage backend (minio) needed for filesystem storage.
+minio:
+  enabled: false
+
+# Not needed for a single-tenant homelab setup. chunksCache in particular defaults to
+# allocating 8Gi for its memcached instance - way beyond what this cluster's log volume needs.
+test:
+  enabled: false
+lokiCanary:
+  enabled: false
+gateway:
+  enabled: false
+resultsCache:
+  enabled: false
+chunksCache:
+  enabled: false

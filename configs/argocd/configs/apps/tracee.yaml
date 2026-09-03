@@ -1,0 +1,50 @@
+# Needs CONFIG_UPROBE_EVENTS on the node kernel (custom Pi builds via bcm2712_defconfig don't
+# set it by default) or Tracee's CO-RE relocation for struct trace_uprobe fails at startup -
+# see configs/tracee/install.sh.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tracee
+  namespace: argo-cd
+spec:
+  project: default
+  sources:
+    - repoURL: https://aquasecurity.github.io/helm-charts
+      chart: tracee
+      targetRevision: 0.23.0
+      helm:
+        releaseName: my-tracee
+        valueFiles:
+          - $values/configs/tracee/values.yml
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      ref: values
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/tracee
+      directory:
+        include: "policy.yml"
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/tracee
+      directory:
+        include: "service.yml"
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/tracee
+      directory:
+        include: "servicemonitor.yml"
+    - repoURL: https://github.com/TrueBad0ur/local-raspberry-kube-cluster.git
+      targetRevision: main
+      path: configs/tracee
+      directory:
+        include: "dashboard-configmap.yml"
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: tracee
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

@@ -3,6 +3,8 @@ kind: Service
 metadata:
   name: tracee-svc
   namespace: tracee
+  labels:
+    app: tracee
 spec:
   ports:
   - port: 80

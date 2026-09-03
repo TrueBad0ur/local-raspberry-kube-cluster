@@ -1,0 +1,21 @@
+# Custom Policy on top of the chart's built-in defaultPolicy (~30 security-signature rules,
+# see default-policy.yaml rendered by the chart). This one is for broad process/network
+# visibility rather than threat detection - the events below were confirmed live (kubectl logs)
+# to actually fire on this cluster; net_packet_tcp/udp/dns never appeared in testing and were
+# left out in favor of what's real.
+apiVersion: tracee.aquasec.com/v1beta1
+kind: Policy
+metadata:
+  name: process-network-policy
+  annotations:
+    description: process execution and network activity visibility
+spec:
+  scope:
+    - global
+  rules:
+    - event: sched_process_exec
+    - event: sched_process_exit
+    - event: net_tcp_connect
+    - event: net_packet_icmp
+    - event: net_packet_http_request
+    - event: net_packet_http_response

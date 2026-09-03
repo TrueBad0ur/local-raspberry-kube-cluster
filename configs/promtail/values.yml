@@ -1,0 +1,7 @@
+# DaemonSet, ships every pod's container logs cluster-wide to Loki - not just Tracee's, but
+# that's a useful bonus (full cluster log visibility) at zero extra config: the chart's default
+# scrape config (all namespaces) already does what we want, no relabeling needed.
+config:
+  clients:
+    # gateway.enabled is false on the loki chart (no nginx in front) - talk to the Service directly.
+    - url: http://loki.loki.svc.cluster.local:3100/loki/api/v1/push

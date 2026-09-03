@@ -1,0 +1,17 @@
+# Hand-written: chart 0.23.0 has no native ServiceMonitor support in values.yaml. Targets
+# the tracee-svc Service (service.yml) which fronts the Tracee DaemonSet's :3366 metrics port.
+# Metrics are coarse aggregate counters (tracee_ebpf_events_total, _lostevents_total, etc.) -
+# no per-event-type breakdown; per-event detail comes from the JSON logs shipped to Loki instead.
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: tracee
+  namespace: tracee
+spec:
+  selector:
+    matchLabels:
+      app: tracee
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 30s
