@@ -1090,6 +1090,12 @@ grafana:
       # (e.g. configs/loki/datasource-configmap.yml lives in the loki namespace) - unlike
       # dashboards above, this defaults to the release namespace only.
       searchNamespace: ALL
+      # Run the sidecar as an initContainer so its first sync finishes before the grafana
+      # container starts - as a regular sidecar it races Grafana's own startup datasource scan,
+      # which runs before the sidecar has synced anything into the shared volume (confirmed via
+      # logs: Grafana's scan ran ~4s before the sidecar wrote loki-datasource.yaml), so the Loki
+      # datasource was written to disk but never actually registered.
+      initDatasources: true
       defaultDatasourceEnabled: true
       isDefaultDatasource: true
 
