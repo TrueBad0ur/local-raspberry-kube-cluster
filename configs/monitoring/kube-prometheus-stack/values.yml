@@ -1086,6 +1086,10 @@ grafana:
         allowUiUpdates: false
     datasources:
       enabled: true
+      # Allow discovery of grafana_datasource=1 ConfigMaps outside the monitoring namespace too
+      # (e.g. configs/loki/datasource-configmap.yml lives in the loki namespace) - unlike
+      # dashboards above, this defaults to the release namespace only.
+      searchNamespace: ALL
       defaultDatasourceEnabled: true
       isDefaultDatasource: true
 
