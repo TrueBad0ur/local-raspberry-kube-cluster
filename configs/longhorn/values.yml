@@ -111,14 +111,17 @@ preUpgradeChecker:
 csi:
   # -- kubelet root directory. When unspecified, Longhorn uses the default value.
   kubeletRootDir: ~
+  # No real load on this cluster (homelab) - the chart's HA default of 3 per CSI sidecar just
+  # burns memory across nodes for no benefit here, same reasoning as longhornUI.replicas below
+  # and Longhorn's own volume replicas=1 elsewhere in this file.
   # -- Replica count of the CSI Attacher. When unspecified, Longhorn uses the default value ("3").
-  attacherReplicaCount: ~
+  attacherReplicaCount: 1
   # -- Replica count of the CSI Provisioner. When unspecified, Longhorn uses the default value ("3").
-  provisionerReplicaCount: ~
+  provisionerReplicaCount: 1
   # -- Replica count of the CSI Resizer. When unspecified, Longhorn uses the default value ("3").
-  resizerReplicaCount: ~
+  resizerReplicaCount: 1
   # -- Replica count of the CSI Snapshotter. When unspecified, Longhorn uses the default value ("3").
-  snapshotterReplicaCount: ~
+  snapshotterReplicaCount: 1
 
 defaultSettings:
   # -- Endpoint used to access the backupstore. (Options: "NFS", "CIFS", "AWS", "GCP", "AZURE")
@@ -332,7 +335,8 @@ longhornDriver:
 
 longhornUI:
   # -- Replica count for Longhorn UI.
-  replicas: 2
+  # No real load on this cluster - see csi.*ReplicaCount comment above.
+  replicas: 1
   # -- PriorityClass for Longhorn UI.
   priorityClass: *defaultPriorityClassNameRef
   # -- Toleration for Longhorn UI on nodes allowed to run Longhorn components.

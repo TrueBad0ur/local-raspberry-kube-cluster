@@ -1,4 +1,5 @@
-replicaCount: 3
+# No real load on this cluster (homelab) - 1 is plenty.
+replicaCount: 1
 
 image:
   repository: truebad0ur/anime-webpage
