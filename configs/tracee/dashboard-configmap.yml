@@ -3,7 +3,11 @@
 #
 # Prometheus only gives aggregate counters (see servicemonitor.yml comment - no per-event-type
 # breakdown), so the actual "which process ran / which connection was made" visibility comes
-# from Loki, fed by Promtail tailing Tracee's JSON pod logs.
+# from Loki, fed by Promtail tailing Tracee's JSON pod logs. Loki's `| json` field extraction
+# turns the JSON blob into real table columns (Node/Process/Event/PID/...) instead of one
+# unreadable line of text, and $node/$event give actual dropdown filters above the dashboard -
+# node_name is a real Promtail-attached Loki label (confirmed via /loki/api/v1/labels), the
+# event list is the fixed set confirmed to actually fire on this cluster (see policy.yml).
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -21,6 +25,29 @@ data:
       "editable": true,
       "refresh": "30s",
       "time": { "from": "now-1h", "to": "now" },
+      "templating": {
+        "list": [
+          {
+            "name": "node",
+            "type": "query",
+            "datasource": { "type": "loki", "uid": "loki" },
+            "query": "label_values(node_name)",
+            "refresh": 2,
+            "sort": 1,
+            "multi": true,
+            "includeAll": true,
+            "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+          },
+          {
+            "name": "event",
+            "type": "custom",
+            "query": "sched_process_exec,sched_process_exit,net_tcp_connect,net_packet_icmp,net_packet_http_request,net_packet_http_response",
+            "multi": true,
+            "includeAll": true,
+            "current": { "selected": true, "text": ["All"], "value": ["$__all"] }
+          }
+        ]
+      },
       "panels": [
         {
           "type": "row",
@@ -71,47 +98,127 @@ data:
         },
         {
           "type": "row",
-          "title": "Live events (Loki)",
+          "title": "Live events (Loki) - filter by node/event above",
           "collapsed": false,
           "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
           "panels": []
         },
         {
-          "type": "logs",
-          "title": "Process executions (sched_process_exec)",
+          "type": "table",
+          "title": "Process executions",
           "id": 3,
-          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 10 },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 10 },
           "datasource": { "type": "loki", "uid": "loki" },
           "options": {
-            "showTime": true,
-            "showLabels": false,
-            "wrapLogMessage": true,
-            "prettifyLogMessage": true,
-            "sortOrder": "Descending"
+            "showHeader": true,
+            "sortBy": [{ "displayName": "Time", "desc": true }]
           },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Line": true,
+                  "namespace": true,
+                  "pod": true,
+                  "node_name": true,
+                  "container": true,
+                  "job": true,
+                  "instance": true,
+                  "service_name": true,
+                  "stream": true,
+                  "filename": true,
+                  "app": true,
+                  "component": true,
+                  "tsNs": true,
+                  "id": true,
+                  "labels": true
+                },
+                "indexByName": {
+                  "Time": 0,
+                  "node": 1,
+                  "process": 2,
+                  "event": 3,
+                  "pid": 4,
+                  "ppid": 5,
+                  "ret": 6,
+                  "args": 7
+                },
+                "renameByName": {
+                  "node": "Node",
+                  "process": "Process",
+                  "event": "Event",
+                  "pid": "PID",
+                  "ppid": "PPID",
+                  "ret": "Ret",
+                  "args": "Args"
+                }
+              }
+            }
+          ],
           "targets": [
             {
-              "expr": "{namespace=\"tracee\"} | json | eventName=\"sched_process_exec\" | line_format \"{{.hostName}} {{.processName}} -> {{.args}}\"",
+              "expr": "{namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\", node=\"hostName\", process=\"processName\", pid=\"processId\", ppid=\"parentProcessId\", ret=\"returnValue\", args=\"args\" | event=~\"sched_process_exec|sched_process_exit\" | event=~\"$event\"",
               "refId": "A"
             }
           ]
         },
         {
-          "type": "logs",
+          "type": "table",
           "title": "Network activity (connect / icmp / http)",
           "id": 4,
-          "gridPos": { "h": 10, "w": 24, "x": 0, "y": 20 },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 22 },
           "datasource": { "type": "loki", "uid": "loki" },
           "options": {
-            "showTime": true,
-            "showLabels": false,
-            "wrapLogMessage": true,
-            "prettifyLogMessage": true,
-            "sortOrder": "Descending"
+            "showHeader": true,
+            "sortBy": [{ "displayName": "Time", "desc": true }]
           },
+          "transformations": [
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Line": true,
+                  "namespace": true,
+                  "pod": true,
+                  "node_name": true,
+                  "container": true,
+                  "job": true,
+                  "instance": true,
+                  "service_name": true,
+                  "stream": true,
+                  "filename": true,
+                  "app": true,
+                  "component": true,
+                  "tsNs": true,
+                  "id": true,
+                  "labels": true
+                },
+                "indexByName": {
+                  "Time": 0,
+                  "node": 1,
+                  "process": 2,
+                  "event": 3,
+                  "pid": 4,
+                  "ppid": 5,
+                  "ret": 6,
+                  "args": 7
+                },
+                "renameByName": {
+                  "node": "Node",
+                  "process": "Process",
+                  "event": "Event",
+                  "pid": "PID",
+                  "ppid": "PPID",
+                  "ret": "Ret",
+                  "args": "Args"
+                }
+              }
+            }
+          ],
           "targets": [
             {
-              "expr": "{namespace=\"tracee\"} | json | eventName=~\"net_tcp_connect|net_packet_icmp|net_packet_http_request|net_packet_http_response\" | line_format \"{{.hostName}} {{.processName}} {{.eventName}} -> {{.args}}\"",
+              "expr": "{namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\", node=\"hostName\", process=\"processName\", pid=\"processId\", ppid=\"parentProcessId\", ret=\"returnValue\", args=\"args\" | event=~\"net_tcp_connect|net_packet_icmp|net_packet_http_request|net_packet_http_response\" | event=~\"$event\"",
               "refId": "A"
             }
           ]
