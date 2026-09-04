@@ -8,6 +8,19 @@ metadata:
   namespace: argo-cd
 spec:
   project: default
+  # The chart mints monitoring-grafana's admin-password from grafana.adminPassword in values.yml,
+  # but that only seeds Grafana's DB on first-ever boot - the user changes the real admin password
+  # by hand through the UI afterwards (never stored in git, public repo). Without this, Argo CD's
+  # selfHeal kept reverting our out-of-band `kubectl patch secret ... admin-password` back to the
+  # stale values.yml value on every reconcile, which is what made the dashboard sidecar's
+  # live-reload call to Grafana's API 401 (REQ_PASSWORD read from a Secret that no longer matched
+  # the real password) - forcing a manual pod restart after every dashboard/datasource change.
+  ignoreDifferences:
+    - group: ""
+      kind: Secret
+      name: monitoring-grafana
+      jsonPointers:
+        - /data/admin-password
   sources:
     - repoURL: https://prometheus-community.github.io/helm-charts
       chart: kube-prometheus-stack
