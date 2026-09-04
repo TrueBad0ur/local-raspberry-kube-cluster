@@ -3,11 +3,19 @@
 #
 # Prometheus only gives aggregate counters (see servicemonitor.yml comment - no per-event-type
 # breakdown), so the actual "which process ran / which connection was made" visibility comes
-# from Loki, fed by Promtail tailing Tracee's JSON pod logs. Loki's `| json` field extraction
-# turns the JSON blob into real table columns (Node/Process/Event/PID/...) instead of one
-# unreadable line of text, and $node/$event give actual dropdown filters above the dashboard -
-# node_name is a real Promtail-attached Loki label (confirmed via /loki/api/v1/labels), the
-# event list is the fixed set confirmed to actually fire on this cluster (see policy.yml).
+# from Loki, fed by Promtail tailing Tracee's JSON pod logs.
+#
+# Node vs Container: tracee's own JSON field `hostName` is the CONTAINER's hostname (Tracee
+# traces every process on the node via hostPID, so this can be "coredns-xxx", "promtail-xxx",
+# etc - not the physical node). The real k8s node is the `node_name` Loki label Promtail attaches
+# based on which node the tracee pod itself runs on (via hostPID it sees everything on that node
+# regardless of which pod/container the traced process belongs to) - confirmed live via
+# /loki/api/v1/labels and cross-checked against a real query response's frame shape.
+#
+# Loki log-selector queries return one JSON object per row inside a single `labels` field (not
+# separate columns) - confirmed via a real /api/ds/query response, not assumed. The `extractFields`
+# transform (source: labels, format: json) is what turns that into actual table columns; the
+# `organize` transform after it then hides noise and sets display names.
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -98,29 +106,78 @@ data:
         },
         {
           "type": "row",
-          "title": "Live events (Loki) - filter by node/event above",
+          "title": "At a glance (Loki) - filter by node/event above",
           "collapsed": false,
           "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 },
           "panels": []
         },
         {
+          "type": "bargauge",
+          "title": "Events by node",
+          "id": 5,
+          "gridPos": { "h": 6, "w": 12, "x": 0, "y": 10 },
+          "datasource": { "type": "loki", "uid": "loki" },
+          "options": {
+            "orientation": "horizontal",
+            "displayMode": "gradient",
+            "reduceOptions": { "calcs": ["sum"] }
+          },
+          "targets": [
+            {
+              "expr": "sum by (node_name) (count_over_time({namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\" | event=~\"$event\" [$__interval]))",
+              "legendFormat": "{{node_name}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
+          "type": "bargauge",
+          "title": "Events by type",
+          "id": 6,
+          "gridPos": { "h": 6, "w": 12, "x": 12, "y": 10 },
+          "datasource": { "type": "loki", "uid": "loki" },
+          "options": {
+            "orientation": "horizontal",
+            "displayMode": "gradient",
+            "reduceOptions": { "calcs": ["sum"] }
+          },
+          "targets": [
+            {
+              "expr": "sum by (event) (count_over_time({namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\" | event=~\"$event\" [$__interval]))",
+              "legendFormat": "{{event}}",
+              "refId": "A"
+            }
+          ]
+        },
+        {
           "type": "table",
           "title": "Process executions",
           "id": 3,
-          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 10 },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 16 },
           "datasource": { "type": "loki", "uid": "loki" },
           "options": {
             "showHeader": true,
             "sortBy": [{ "displayName": "Time", "desc": true }]
           },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "align": "left", "cellOptions": { "type": "auto" }, "width": 140 }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+              { "matcher": { "id": "byName", "options": "PID" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "PPID" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "Ret" }, "properties": [{ "id": "custom.width", "value": 70 }] },
+              {
+                "matcher": { "id": "byName", "options": "Args" },
+                "properties": [{ "id": "custom.cellOptions", "value": { "type": "json-view" } }]
+              }
+            ]
+          },
           "transformations": [
             {
               "id": "extractFields",
-              "options": {
-                "source": "labels",
-                "format": "json",
-                "replace": false
-              }
+              "options": { "source": "labels", "format": "json", "replace": false }
             },
             {
               "id": "organize",
@@ -133,7 +190,6 @@ data:
                   "labelTypes": true,
                   "namespace": true,
                   "pod": true,
-                  "node_name": true,
                   "container": true,
                   "job": true,
                   "instance": true,
@@ -146,7 +202,7 @@ data:
                 },
                 "indexByName": {
                   "Time": 0,
-                  "node": 1,
+                  "node_name": 1,
                   "process": 2,
                   "event": 3,
                   "pid": 4,
@@ -155,7 +211,7 @@ data:
                   "args": 7
                 },
                 "renameByName": {
-                  "node": "Node",
+                  "node_name": "Node",
                   "process": "Process",
                   "event": "Event",
                   "pid": "PID",
@@ -168,7 +224,7 @@ data:
           ],
           "targets": [
             {
-              "expr": "{namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\", node=\"hostName\", process=\"processName\", pid=\"processId\", ppid=\"parentProcessId\", ret=\"returnValue\", args=\"args\" | event=~\"sched_process_exec|sched_process_exit\" | event=~\"$event\"",
+              "expr": "{namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\", process=\"processName\", pid=\"processId\", ppid=\"parentProcessId\", ret=\"returnValue\", args=\"args\" | event=~\"sched_process_exec|sched_process_exit\" | event=~\"$event\"",
               "refId": "A"
             }
           ]
@@ -177,20 +233,31 @@ data:
           "type": "table",
           "title": "Network activity (connect / icmp / http)",
           "id": 4,
-          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 22 },
+          "gridPos": { "h": 12, "w": 24, "x": 0, "y": 28 },
           "datasource": { "type": "loki", "uid": "loki" },
           "options": {
             "showHeader": true,
             "sortBy": [{ "displayName": "Time", "desc": true }]
           },
+          "fieldConfig": {
+            "defaults": {
+              "custom": { "align": "left", "cellOptions": { "type": "auto" }, "width": 140 }
+            },
+            "overrides": [
+              { "matcher": { "id": "byName", "options": "Time" }, "properties": [{ "id": "custom.width", "value": 180 }] },
+              { "matcher": { "id": "byName", "options": "PID" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "PPID" }, "properties": [{ "id": "custom.width", "value": 90 }] },
+              { "matcher": { "id": "byName", "options": "Ret" }, "properties": [{ "id": "custom.width", "value": 70 }] },
+              {
+                "matcher": { "id": "byName", "options": "Args" },
+                "properties": [{ "id": "custom.cellOptions", "value": { "type": "json-view" } }]
+              }
+            ]
+          },
           "transformations": [
             {
               "id": "extractFields",
-              "options": {
-                "source": "labels",
-                "format": "json",
-                "replace": false
-              }
+              "options": { "source": "labels", "format": "json", "replace": false }
             },
             {
               "id": "organize",
@@ -203,7 +270,6 @@ data:
                   "labelTypes": true,
                   "namespace": true,
                   "pod": true,
-                  "node_name": true,
                   "container": true,
                   "job": true,
                   "instance": true,
@@ -216,7 +282,7 @@ data:
                 },
                 "indexByName": {
                   "Time": 0,
-                  "node": 1,
+                  "node_name": 1,
                   "process": 2,
                   "event": 3,
                   "pid": 4,
@@ -225,7 +291,7 @@ data:
                   "args": 7
                 },
                 "renameByName": {
-                  "node": "Node",
+                  "node_name": "Node",
                   "process": "Process",
                   "event": "Event",
                   "pid": "PID",
@@ -238,7 +304,7 @@ data:
           ],
           "targets": [
             {
-              "expr": "{namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\", node=\"hostName\", process=\"processName\", pid=\"processId\", ppid=\"parentProcessId\", ret=\"returnValue\", args=\"args\" | event=~\"net_tcp_connect|net_packet_icmp|net_packet_http_request|net_packet_http_response\" | event=~\"$event\"",
+              "expr": "{namespace=\"tracee\", node_name=~\"$node\"} | json event=\"eventName\", process=\"processName\", pid=\"processId\", ppid=\"parentProcessId\", ret=\"returnValue\", args=\"args\" | event=~\"net_tcp_connect|net_packet_icmp|net_packet_http_request|net_packet_http_response\" | event=~\"$event\"",
               "refId": "A"
             }
           ]
