@@ -115,10 +115,22 @@ data:
           },
           "transformations": [
             {
+              "id": "extractFields",
+              "options": {
+                "source": "labels",
+                "format": "json",
+                "replace": false
+              }
+            },
+            {
               "id": "organize",
               "options": {
                 "excludeByName": {
                   "Line": true,
+                  "tsNs": true,
+                  "id": true,
+                  "labels": true,
+                  "labelTypes": true,
                   "namespace": true,
                   "pod": true,
                   "node_name": true,
@@ -130,10 +142,6 @@ data:
                   "filename": true,
                   "app": true,
                   "component": true,
-                  "tsNs": true,
-                  "id": true,
-                  "labels": true,
-                  "labelTypes": true,
                   "detected_level": true
                 },
                 "indexByName": {
@@ -177,10 +185,22 @@ data:
           },
           "transformations": [
             {
+              "id": "extractFields",
+              "options": {
+                "source": "labels",
+                "format": "json",
+                "replace": false
+              }
+            },
+            {
               "id": "organize",
               "options": {
                 "excludeByName": {
                   "Line": true,
+                  "tsNs": true,
+                  "id": true,
+                  "labels": true,
+                  "labelTypes": true,
                   "namespace": true,
                   "pod": true,
                   "node_name": true,
@@ -192,10 +212,6 @@ data:
                   "filename": true,
                   "app": true,
                   "component": true,
-                  "tsNs": true,
-                  "id": true,
-                  "labels": true,
-                  "labelTypes": true,
                   "detected_level": true
                 },
                 "indexByName": {
