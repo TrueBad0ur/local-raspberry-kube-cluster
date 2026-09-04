@@ -132,7 +132,9 @@ data:
                   "component": true,
                   "tsNs": true,
                   "id": true,
-                  "labels": true
+                  "labels": true,
+                  "labelTypes": true,
+                  "detected_level": true
                 },
                 "indexByName": {
                   "Time": 0,
@@ -192,7 +194,9 @@ data:
                   "component": true,
                   "tsNs": true,
                   "id": true,
-                  "labels": true
+                  "labels": true,
+                  "labelTypes": true,
+                  "detected_level": true
                 },
                 "indexByName": {
                   "Time": 0,
