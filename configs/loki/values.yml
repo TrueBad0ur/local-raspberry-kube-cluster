@@ -21,13 +21,27 @@ loki:
     type: filesystem
   ingester:
     chunk_encoding: snappy
+  # Without this, nothing ever deletes old chunks/index and the PVC fills up silently until
+  # Loki can't even start (hit this: "no space left on device" on a 10Gi volume after ~2 days
+  # of Promtail shipping the whole cluster's logs). SingleBinary mode runs the compactor
+  # in-process (compactor.replicas above is for the separate Distributed-mode deployment,
+  # doesn't apply here) - just needs retention turned on.
+  limits_config:
+    retention_period: 72h
+  compactor:
+    retention_enabled: true
+    delete_request_store: filesystem
 
 singleBinary:
   replicas: 1
   persistence:
     enabled: true
     storageClass: longhorn
-    size: 10Gi
+    # Started at 10Gi, filled up in ~2 days (see limits_config/compactor below for the real
+    # fix - retention was never configured). Bumped to 20Gi as headroom; the live PVC was
+    # already expanded to match by hand (StatefulSet volumeClaimTemplates are immutable, so
+    # this value only takes effect for a fresh install, not an existing PVC).
+    size: 20Gi
 
 # SimpleScalable-mode targets - must be zeroed out explicitly, the chart won't infer this
 # from deploymentMode alone.
